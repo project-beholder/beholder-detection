@@ -149,7 +149,7 @@ export const getMarkers = () => {
 }
 
 export const getMarker = (id) => {
-  // return markers.find()
+  return markers.find(m => m.id === id);
 }
 
 // Delta time expected as fraction of second (binding these for some reason?)
