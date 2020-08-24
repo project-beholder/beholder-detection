@@ -3,10 +3,11 @@
 body {
   font-family: helvetica, arial, sans-serif;
   margin: 0;
+  padding: 0;
   overflow: hidden;
 }
 
-h1 {
+/* h1 {
   font-style: italic;
   color: #373fff;
 }
@@ -31,4 +32,4 @@ canvas.off-screen {
   position: absolute;
   top: 5px;
   right: 5px;
-}
+} */
