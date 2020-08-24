@@ -3,12 +3,15 @@ var path = require('path');
 
 module.exports = {
   devtool: 'source-map',
-  entry: './index.js',
+  entry: {
+    index: ['./index.js'],
+    canvas_test: ['./canvas_test.js'],
+  },
   mode: 'development',
 
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: 'app.js',
+    filename: '[name].js',
   },
 
   module: {

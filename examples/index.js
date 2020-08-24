@@ -2,7 +2,7 @@ import Beholder from '../src/index';
   
 function onLoad(){
   Beholder.init(); // optional params?
-  // Beholder.show(); // Puts it on screen, should also enable marker drawing
+  Beholder.show(); // Puts it on screen, should also enable marker drawing
 
   requestAnimationFrame(update);
 }

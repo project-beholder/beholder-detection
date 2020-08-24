@@ -19,6 +19,7 @@ export const init = () => {
     top: 0;
     width: 100vw;
     z-index: 10;
+    display: none;
   `; // DOCUMENT THESE STYLES
   document.body.appendChild(beholderContainer);
 
@@ -106,10 +107,50 @@ export const init = () => {
   );
 }
 
+let canShow = false;
+let shown = false;
+export const show = () => {
+  shown = true;
+  beholderContainer.style = `
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    z-index: 10;
+    display: block;
+  `
+}
+
+export const hide = () => {
+  shown = false;
+  beholderContainer.style = `
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    z-index: 10;
+    display: none;
+  `
+}
+
 const FRAME_CAP = 1.0 / 35; // Capped frame rate, 1/30 = 30fps, make this something in options?
 let frameCounter = 0;
 let greyFormatImage = new GreyscaleImage(480, 360);
 let greyFormatSourceImage = new GreyscaleImage(480, 360);
+
+
+let markers = [];
+export const getMarkers = () => {
+  return markers;
+}
+
+export const getMarker = (id) => {
+  // return markers.find()
+}
 
 // Delta time expected as fraction of second (binding these for some reason?)
 export const update = (dt) => {
@@ -128,26 +169,31 @@ export const update = (dt) => {
   greyFormatImage.sampleFrom(imageData, 480*2, 480, 0);
   greyFormatSourceImage.sampleFrom(imageData, 480*2, 0, 0);
 
-  var markers = detector.detect(greyFormatImage, greyFormatSourceImage);
-  debugGraphics.clear(); // Maybe change name here
+  markers = detector.detect(greyFormatImage, greyFormatSourceImage);
 
-  // Draw candidates
-  markers.forEach((m) => {
-    const c = m.corners;
-    debugGraphics.lineStyle(1, 0xffffff);
+  if (shown) {
+    debugGraphics.clear();
+    // Draw candidates
+    markers.forEach((m) => {
+      const c = m.corners;
+      debugGraphics.lineStyle(1, 0xffffff);
 
-    debugGraphics.moveTo(c[0].x, c[0].y);
-    debugGraphics.lineTo(c[1].x, c[1].y);
-    debugGraphics.lineTo(c[2].x, c[2].y);
-    debugGraphics.lineTo(c[3].x, c[3].y);
-    debugGraphics.lineTo(c[0].x, c[0].y);
-    
-    debugGraphics.endFill();
-
-  });
+      debugGraphics.moveTo(c[0].x, c[0].y);
+      debugGraphics.lineTo(c[1].x, c[1].y);
+      debugGraphics.lineTo(c[2].x, c[2].y);
+      debugGraphics.lineTo(c[3].x, c[3].y);
+      debugGraphics.lineTo(c[0].x, c[0].y);
+      
+      debugGraphics.endFill();
+    });
+  }
 }
 
 export default {
   init,
   update,
+  getMarker,
+  getMarkers,
+  show,
+  hide,
 }
