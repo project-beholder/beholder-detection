@@ -1,14 +1,13 @@
 /* eslint-disable */
-var path = require('path');
+const path = require('path');
 
 module.exports = {
-  devtool: 'source-map',
   entry: './src/index.js',
-  mode: 'development',
-
   output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'app.js',
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'beholder-detection.js',
+    library: 'beholder-detection',
+    libraryTarget: 'umd',
   },
 
   module: {
@@ -19,5 +18,14 @@ module.exports = {
         loader: 'babel-loader',
       },
     ],
+  },
+
+  externals: {
+    "pixi.js": {
+      commonjs: 'pixi.js',
+      commonjs2: 'pixi.js',
+      amd: 'pixi.js',
+      root: 'PIXI',
+    },
   },
 };

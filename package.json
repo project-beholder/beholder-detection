@@ -2,7 +2,7 @@
   "name": "mechamarkers-mobile-pwa",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/beholder-detection.js",
   "scripts": {
     "build": "webpack",
     "build:watch": "webpack --watch",
