@@ -1,5 +1,5 @@
 {
-  "name": "mechamarkers-mobile-pwa",
+  "name": "beholder-detection",
   "version": "1.0.0",
   "description": "",
   "main": "dist/beholder-detection.js",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Petroochio/mechamarkers-mobile-pwa.git"
+    "url": "git+https://github.com/atlas-acme-lab/beholder-detection.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Petroochio/mechamarkers-mobile-pwa/issues"
+    "url": "https://github.com/atlas-acme-lab/beholder-detection/issues"
   },
-  "homepage": "https://github.com/Petroochio/mechamarkers-mobile-pwa#readme",
+  "homepage": "https://github.com/atlas-acme-lab/beholder-detection#readme",
   "devDependencies": {
     "@babel/core": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
