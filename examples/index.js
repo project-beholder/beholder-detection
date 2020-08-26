@@ -1,6 +1,10 @@
 import Beholder from '../src/index';
-  
+
+let fps;
+
 function onLoad(){
+  fps = document.querySelector('#fps');
+  console.log(fps);
   Beholder.init(); // optional params?
   Beholder.show(); // Puts it on screen, should also enable marker drawing
 
@@ -11,9 +15,11 @@ let prevTime = Date.now();
 
 function update() {
   const currentTime = Date.now();
-  const dt = currentTime - prevTime;
+  const delta = currentTime - prevTime;
   prevTime = currentTime;
-  Beholder.update(dt / 1000);
+  const dt = delta / 1000;
+  fps.innerHTML = Math.floor(1 / dt);
+  Beholder.update(dt);
 
   requestAnimationFrame(update);
 }
