@@ -3,12 +3,23 @@ import aruco from './aruco/index.js';
 import GreyscaleImage from './aruco/GreyscaleImage';
 import { greyscaleFilter, adaptiveThresholdFilter } from './ShaderFilters';
 
+import Marker from './Marker';
+import MarkerPair from './MarkerPair';
+
 let video, imageData, detector, beholderContainer, pixiContainer, debugGraphics;
 let pixiApp;
 let canDetect = false;
 const width = 640;
 const height = 480;
 let videoSprite, greyVideoSprite
+
+const MARKER_COUNT = 100;
+const MARKERS = [];
+
+// Create marker 
+for (let i = 0; i < MARKER_COUNT; i++) {
+  MARKERS.push(new Marker(i));
+}
 
 // Should this have options here?
 export const init = () => {
@@ -143,40 +154,85 @@ export const hide = () => {
 let greyFormatImage = new GreyscaleImage(width, height);
 let greyFormatSourceImage = new GreyscaleImage(width, height);
 
-let markers = [];
-export const getMarkers = () => {
-  return markers;
+export const getAllMarkers = () => {
+  return MARKERS;
 }
 
 export const getMarker = (id) => {
-  return markers.find(m => m.id === id);
+  // Maybe let this error?
+  if (id > MARKERS.length) {
+    return undefined;
+  }
+  return MARKERS[id];
 }
 
-// Delta time expected as fraction of second (binding these for some reason?)
-export const update = (dt) => {
-  if (!canDetect) return;
+export const getMarkerPair = (idA, idB) => {
+  // throw error here
+  new MarkerPair(MARKERS[idA], MARKERS[idB]);
+}
+
+const detect = () => {
   pixiApp.render();
 
   imageData = pixiApp.renderer.plugins.extract.pixels(pixiApp.stage);
   greyFormatImage.sampleFrom(imageData, width*2, width, 0);
   greyFormatSourceImage.sampleFrom(imageData, width*2, 0, 0);
 
-  markers = detector.detect(greyFormatImage, greyFormatSourceImage);
+  return detector.detect(greyFormatImage, greyFormatSourceImage);
+}
 
+const updateMarkers = (dt, detectedMarkers) => {
+  detectedMarkers.forEach(m => {
+    if (m.id < MARKERS.length) {
+      MARKERS[m.id].update(m);
+    }
+  })
+
+  MARKERS.forEach(m => m.updatePresence(dt));
+}
+
+let prevTime = Date.now();
+export const update = () => {
+  if (!canDetect) return;
+  const currentTime = Date.now();
+  const dt = (currentTime - prevTime) / 1000;
+  prevTime = currentTime;
+
+  updateMarkers(dt, detect());
+
+  // Draw detected markers here
   if (shown) {
     debugGraphics.clear();
     // Draw candidates
-    markers.forEach((m) => {
-      const c = m.corners;
-      debugGraphics.lineStyle(2, 0x4444ff);
+    MARKERS.forEach((m) => {
+      // Bail of marker isn't present
+      if (!m.present) return;
 
-      debugGraphics.moveTo(c[0].x, c[0].y);
-      debugGraphics.lineTo(c[1].x, c[1].y);
-      debugGraphics.lineTo(c[2].x, c[2].y);
-      debugGraphics.lineTo(c[3].x, c[3].y);
-      debugGraphics.lineTo(c[0].x, c[0].y);
-      
       debugGraphics.endFill();
+
+      const center = m.center;
+      const corners = m.corners;
+      const angle = m.rotation;
+
+      debugGraphics.lineStyle(3, 0xff00aa);
+      debugGraphics.moveTo(corners[0].x, corners[0].y);
+      debugGraphics.lineTo(corners[1].x, corners[1].y);
+      debugGraphics.lineTo(corners[2].x, corners[2].y);
+      debugGraphics.lineTo(corners[3].x, corners[3].y);
+      debugGraphics.lineTo(corners[0].x, corners[0].y);
+
+      // draw center
+      debugGraphics.drawRect(center.x - 1, center.y - 1, 2, 2);
+
+      // draw first corner
+      debugGraphics.lineStyle(3, 0x0000aa);
+      debugGraphics.drawRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
+
+      // dctx.font = "12px monospace";
+      // dctx.textAlign = "center";
+      // dctx.fillStyle = "#FF55AA";
+      // dctx.fillText(`ID=${m.id}`, center.x, center.y - 7);
+      // dctx.fillText(angle.toFixed(2), center.x, center.y + 15);
     });
   }
 }
@@ -185,7 +241,7 @@ export default {
   init,
   update,
   getMarker,
-  getMarkers,
+  getAllMarkers,
   show,
   hide,
 }

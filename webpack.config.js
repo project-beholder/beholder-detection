@@ -27,5 +27,11 @@ module.exports = {
       amd: 'pixi.js',
       root: 'PIXI',
     },
+    "mathjs": {
+      commonjs: 'mathjs',
+      commonjs2: 'mathjs',
+      amd: 'mathjs',
+      root: 'mathjs',
+    },
   },
 };
