@@ -6,8 +6,8 @@ function onLoad(){
   Beholder.init(); // optional params?
 
   canvas = document.querySelector('#example-canvas');
-  canvas.width = 480;
-  canvas.height = 360;
+  canvas.width = 640;
+  canvas.height = 480;
   ctx = canvas.getContext('2d');
 
   requestAnimationFrame(update);
@@ -19,11 +19,12 @@ function update() {
   const currentTime = Date.now();
   const dt = currentTime - prevTime;
   prevTime = currentTime;
-  Beholder.update(dt / 1000);
+  Beholder.update();
   
-  ctx.clearRect(0,0, 480, 360);
+  ctx.clearRect(0,0, 640, 480);
   
-  Beholder.getMarkers().forEach(m => {
+  Beholder.getAllMarkers().forEach(m => {
+    if (!m.present) return;
     const c = m.corners;
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#000';

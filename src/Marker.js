@@ -1,6 +1,6 @@
 import Vec2 from './utils/Vec2';
 
-const MARKER_TIMEOUT_DEFAULT = 1 / 30; 
+const MARKER_TIMEOUT_DEFAULT = 1 / 20; 
 
 class Marker {
   constructor(ID) {
@@ -16,6 +16,7 @@ class Marker {
 
   update(m) {
     this.timestamp = 0;
+    this.present = true;
     this.center = m.center;
     this.corners = m.corners.map(c => c);
     this.rotation = Vec2.angleBetween(
@@ -26,7 +27,7 @@ class Marker {
 
   updatePresence(dt) {
     this.timestamp += dt;
-    this.present = (this.timestamp < this.timeout);
+    this.present = (this.timestamp >= this.timeout) ? false : true;
   }
 }
 

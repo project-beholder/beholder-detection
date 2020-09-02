@@ -9,7 +9,7 @@ npm install beholder-detection
 ## Usage
 Basic Example
 ```
-const Beholder = require('beholder-detection`);
+const Beholder = require('beholder-detection');
 ```
 
 ### General Functions
