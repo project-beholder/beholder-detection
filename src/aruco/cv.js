@@ -40,6 +40,24 @@ CV.Image = function(width, height, data){
   this.data = data || [];
 };
 
+CV.grayscale = function(imageSrc, imageDst) {
+  var src = imageSrc.data,
+    dst = imageDst.data,
+    len = src.length,
+    i = 0,
+    j = 0;
+
+  for (; i < len; i += 4) {
+    dst[j++] =
+      (src[i] * 0.299 + src[i + 1] * 0.587 + src[i + 2] * 0.114 + 0.5) & 0xff;
+  }
+
+  imageDst.width = imageSrc.width;
+  imageDst.height = imageSrc.height;
+
+  return imageDst;
+};
+
 CV.threshold = function(imageSrc, imageDst, threshold){
   var src = imageSrc.data, dst = imageDst.data,
       len = src.length, tab = [], i;
@@ -50,6 +68,29 @@ CV.threshold = function(imageSrc, imageDst, threshold){
 
   for (i = 0; i < len; ++ i){
     dst[i] = tab[ src[i] ];
+  }
+
+  imageDst.width = imageSrc.width;
+  imageDst.height = imageSrc.height;
+
+  return imageDst;
+};
+
+CV.adaptiveThreshold = function(imageSrc, imageDst, kernelSize, threshold) {
+  var src = imageSrc.data,
+    dst = imageDst.data,
+    len = src.length,
+    tab = [],
+    i;
+
+  CV.stackBoxBlur(imageSrc, imageDst, kernelSize);
+
+  for (i = 0; i < 768; ++i) {
+    tab[i] = i - 255 <= -threshold ? 255 : 0;
+  }
+
+  for (i = 0; i < len; ++i) {
+    dst[i] = tab[src[i] - dst[i] + 255];
   }
 
   imageDst.width = imageSrc.width;
@@ -98,6 +139,147 @@ CV.otsu = function(imageSrc){
   }
 
   return threshold;
+};
+
+CV.stackBoxBlurMult = [
+  1,
+  171,
+  205,
+  293,
+  57,
+  373,
+  79,
+  137,
+  241,
+  27,
+  391,
+  357,
+  41,
+  19,
+  283,
+  265
+];
+
+CV.stackBoxBlurShift = [
+  0,
+  9,
+  10,
+  11,
+  9,
+  12,
+  10,
+  11,
+  12,
+  9,
+  13,
+  13,
+  10,
+  9,
+  13,
+  13
+];
+
+CV.BlurStack = function() {
+  this.color = 0;
+  this.next = null;
+};
+
+CV.stackBoxBlur = function(imageSrc, imageDst, kernelSize) {
+  var src = imageSrc.data,
+    dst = imageDst.data,
+    height = imageSrc.height,
+    width = imageSrc.width,
+    heightMinus1 = height - 1,
+    widthMinus1 = width - 1,
+    size = kernelSize + kernelSize + 1,
+    radius = kernelSize + 1,
+    mult = CV.stackBoxBlurMult[kernelSize],
+    shift = CV.stackBoxBlurShift[kernelSize],
+    stack,
+    stackStart,
+    color,
+    sum,
+    pos,
+    start,
+    p,
+    x,
+    y,
+    i;
+
+  stack = stackStart = new CV.BlurStack();
+  for (i = 1; i < size; ++i) {
+    stack = stack.next = new CV.BlurStack();
+  }
+  stack.next = stackStart;
+
+  pos = 0;
+
+  for (y = 0; y < height; ++y) {
+    start = pos;
+
+    color = src[pos];
+    sum = radius * color;
+
+    stack = stackStart;
+    for (i = 0; i < radius; ++i) {
+      stack.color = color;
+      stack = stack.next;
+    }
+    for (i = 1; i < radius; ++i) {
+      stack.color = src[pos + i];
+      sum += stack.color;
+      stack = stack.next;
+    }
+
+    stack = stackStart;
+    for (x = 0; x < width; ++x) {
+      dst[pos++] = (sum * mult) >>> shift;
+
+      p = x + radius;
+      p = start + (p < widthMinus1 ? p : widthMinus1);
+      sum -= stack.color - src[p];
+
+      stack.color = src[p];
+      stack = stack.next;
+    }
+  }
+
+  for (x = 0; x < width; ++x) {
+    pos = x;
+    start = pos + width;
+
+    color = dst[pos];
+    sum = radius * color;
+
+    stack = stackStart;
+    for (i = 0; i < radius; ++i) {
+      stack.color = color;
+      stack = stack.next;
+    }
+    for (i = 1; i < radius; ++i) {
+      stack.color = dst[start];
+      sum += stack.color;
+      stack = stack.next;
+
+      start += width;
+    }
+
+    stack = stackStart;
+    for (y = 0; y < height; ++y) {
+      dst[pos] = (sum * mult) >>> shift;
+
+      p = y + radius;
+      p = x + (p < heightMinus1 ? p : heightMinus1) * width;
+      sum -= stack.color - dst[p];
+
+      stack.color = dst[p];
+      stack = stack.next;
+
+      pos += width;
+    }
+  }
+
+  return imageDst;
 };
 
 CV.gaussianBlur = function(imageSrc, imageDst, imageMean, kernelSize){

@@ -1,0 +1,112 @@
+/* CSS files add styling rules to your content */
+
+html {
+  margin: 0;
+  padding: 0;
+  font-family: monospace;
+  font-size: 12px;
+  color: black;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: url(
+    data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAALklEQVQYV03LwQkAQAwCQVOtNW21ORIIp8/BLaAVs61KHAA+Hky0z4RFST1J7gFz9hgtYH4SQAAAAABJRU5ErkJggg==
+  ) repeat;
+}
+
+#detectionDiv {
+  position: absolute;
+  top: 0;
+  left: -110vw;
+  transition: all 500ms ease-in-out;
+  z-index: 999;
+}
+
+#detectionDiv.active {
+  top: 0;
+  left: 0;
+}
+
+#detectionDiv #detection-canvas {
+  position: relative;
+  float: left;
+  clear: both;
+  border-radius: 0 0 0.5em 0;
+  border-bottom: 4px solid #FFF;
+}
+
+#detectionDiv #detection-canvas-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 0 0 0.5em 0;
+}
+
+#detectionDiv #parametersMenu {
+  position: relative;
+  float: left;
+  clear: both;
+  margin: 1em 0 1em 0em;
+  padding: 1em 1.5em 1em 1.5em;
+  background: black;
+  border-radius: 0 0.5em 0.5em 0;
+  border-bottom: 4px solid #FFF;
+}
+
+#detectionDiv #parametersMenu .parameterItem {
+  position: relative;
+  float: left;
+  clear: both;
+  margin: 0.25em 0 0.25em 0;
+}
+
+#detectionDiv #parametersMenu .parameterItem span {
+  position: relative;
+  float: left;
+  width: 18em;
+  font-weight: 600;
+  color: white;
+}
+
+#toggleScreen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50px;
+  height: 50px;
+  background: #000;
+  z-index: 9999;
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 6px;
+  border-radius: 0 0 50px 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 100ms ease-in;
+}
+
+#toggleScreen:hover, #toggleScreen:active {
+  padding: 6px 0 0 0;
+}
+
+
+
+/* styles for #app */
+
+#app {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+#app #app-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}

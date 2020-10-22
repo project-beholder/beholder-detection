@@ -1,5 +1,5 @@
 # Beholder Detection
-This is the marker detection component of Beholder. It is 
+This is the marker detection component of Beholder.
 
 ## Installation
 ```

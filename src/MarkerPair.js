@@ -51,11 +51,11 @@ class MarkerPair {
       const cornerB0 = q2r(this.markerB.corners[0]);
       const cornerB1 = q2r(this.markerB.corners[1]);
 
-      const vecAB = vecSub(centerA, centerB);
-      const vecA01 = vecSub(cornerA0, cornerA1);
-      const d = vecMag(vecAB);
-      const head = vecAngleBetween(vecA01, vecAB);
-      const angle = vecAngleBetween(vecA01, vecSub(cornerB0, cornerB1));
+      const vecAB = Vec2.sub(centerA, centerB);
+      const vecA01 = Vec2.sub(cornerA0, cornerA1);
+      const d = Vec2.mag(vecAB);
+      const head = Vec2.angleBetween(vecA01, vecAB);
+      const angle = Vec2.angleBetween(vecA01, Vec2.sub(cornerB0, cornerB1));
 
       return { distance: d, heading: head, rotation: angle };
     }

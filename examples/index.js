@@ -1,13 +1,9 @@
 import Beholder from '../src/index';
 
-let fps;
-
 function onLoad(){
-  fps = document.querySelector('#fps');
 
   // Initialize beholder
   Beholder.init(); // optional params?
-  Beholder.show(); // Puts it on screen, should also enable marker drawing
 
   requestAnimationFrame(update);
 }
@@ -20,9 +16,7 @@ function update() {
   prevTime = currentTime;
   const dt = delta / 1000;
 
-  fps.innerHTML = Math.floor(1 / dt);
-
-  Beholder.update(dt);
+  Beholder.update();
 
   requestAnimationFrame(update);
 }

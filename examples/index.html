@@ -1,16 +1,83 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <meta name="description" content="A list of A-Frame entries submitted to the js13kGames 2017 competition, used as an example for the MDN articles about Progressive Web Apps.">
-    <meta name="author" content="Peter Gyory">
+    <meta name="description" content="">
+    <meta name="author" content="Peter Gyory, Clement Zheng">
     <meta name="theme-color" content="#B12A34">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta property="og:image" content="./icons/mm-icon-512.png">
-    <script src="./build/index.js" defer></script>
-    <!-- import the webpage's stylesheet -->
-    
+
+    <script src="/build/index.js"></script>
+    <link rel="stylesheet" href="/Beholder.css">
   </head>
 
   <body>
-    <h1 id="fps" style="position: absolute; z-index: 30; color:greenyellow;">0</h1>
+    <div id="toggleScreen">
+      &#10562;
+    </div>
+    
+    <div id="detectionDiv" class="">
+    
+      <canvas id="detection-canvas"></canvas>
+      <canvas id="detection-canvas-overlay"></canvas>
+
+      <div id="parametersMenu">
+        <div class="parameterItem">
+          <span>Camera Feed ID</span>
+          <select name="CAMERA_INDEX" id="CAMERA_INDEX">
+            <option value="0" label="0" selected></option>
+          </select>
+        </div>
+        <div class="parameterItem">
+          <span>Video Size</span>
+          <select name="VIDEO_SIZE_INDEX" id="VIDEO_SIZE_INDEX">
+            <option value="0" label="320&times;240"></option>
+            <option value="1" label="640&times;480" selected></option>
+            <option value="2" label="1280&times;720"></option>
+            <option value="2" label="1920&times;1080"></option>
+          </select>
+        </div>
+        <div class="parameterItem">
+          <span>Min Marker Distance</span>
+          <input id="MIN_MARKER_DISTANCE" type="number" name="MIN_MARKER_DISTANCE" min="1" max="50" value="10" step="1">
+        </div>
+        <div class="parameterItem">
+          <span>Min Marker Perimeter</span>
+          <input id="MIN_MARKER_PERIMETER" type="number" name="MIN_MARKER_PERIMETER" min="0.01" max="0.99" value="0.02" step="0.01">
+        </div>
+        <div class="parameterItem">
+          <span>Max Marker Perimeter</span>
+          <input id="MAX_MARKER_PERIMETER" type="number" name="MAX_MARKER_PERIMETER" min="0.01" max="0.99" value="0.8" step="0.01">
+        </div>
+        <div class="parameterItem">
+          <span>Size After Perspective Removal</span>
+          <input id="SIZE_AFTER_PERSPECTIVE_REMOVAL" type="number" name="SIZE_AFTER_PERSPECTIVE_REMOVAL" min="1" max="200" value="49" step="1">
+        </div>
+        <div class="parameterItem">
+          <span>Contrast</span>
+          <input id="IMAGE_CONTRAST" type="number" name="IMAGE_CONTRAST" min="-100" max="100" value="0" step="1">
+        </div>
+        <div class="parameterItem">
+          <span>Brightness</span>
+          <input id="IMAGE_BRIGHTNESS" type="number" name="IMAGE_BRIGHTNESS" min="-100" max="100" value="0" step="1">
+        </div>
+        <div class="parameterItem">
+          <span>Grayscale</span>
+          <input id="IMAGE_GRAYSCALE" type="number" name="IMAGE_GRAYSCALE" min="0" max="100" value="0" step="1">
+        </div>
+      </div>
+    </div>
+    
+    
+    <div id="app" class="">
+      
+      <!-- WRITE APPLICATION IN HERE -->
+      <!-- WRITE APPLICATION IN HERE -->
+      <!-- WRITE APPLICATION IN HERE -->
+      
+      <canvas id="app-canvas"></canvas>
+      
+    </div>
+
+    
   </body>
 </html>

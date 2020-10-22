@@ -19,6 +19,10 @@ export default class Vec2 {
     return new Vec2(x, y);
   }
 
+  static mag(v) {
+    return Math.sqrt(v.x*v.x + v.y*v.y);
+  }
+
   static angleBetween(v1, v2) {
     // return Math.atan2(vec1.y, vec1.x) - Math.atan2(vec2.y, vec2.x);
     return Math.atan2(
