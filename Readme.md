@@ -15,7 +15,7 @@ const Beholder = require('beholder-detection');
 ### General Functions
 | syntax | usage |
 | --- | --- |
-| `init()` | Initializes Beholder and appeneds needed elements to the DOM (video and webgl canvas) |
+| `init('dom-selector')` | Initializes Beholder and appeneds needed elements to the DOM (video and webgl canvas). Requires you to pass a root dom element to append objects to |
 | `update()` | Runs detection code and updates all marker objects |
 | `show()` | Reveals detection overlay |
 | `hide()` | Hides detection overlay |
