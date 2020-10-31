@@ -3,7 +3,7 @@ import Beholder from '../src/index';
 function onLoad(){
 
   // Initialize beholder
-  Beholder.init(); // optional params?
+  Beholder.init('#beholder-root'); // optional params?
 
   requestAnimationFrame(update);
 }

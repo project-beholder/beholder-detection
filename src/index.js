@@ -1,25 +1,21 @@
-import aruco from './aruco/index.js';
-import GreyscaleImage from './aruco/GreyscaleImage';
+import xs from 'xstream';
+import { run } from '@cycle/run';
+import { makeDOMDriver, div, canvas } from '@cycle/dom';
+import {
+  toggleStyle, overlayStyle, detectionPanelStyle, detectionCanvasStyle, detectionCanvasOverlayStyle
+} from './Styles';
 
+import Webcam from './Webcam';
+import DetectionManager from './DetectionManager';
 import Marker from './Marker';
-import MarkerPair from './MarkerPair';
-import { initUI } from './DetectionParamsUI';
+import ParamsMenu from './ParamsMenu';
 
-let video, imageData, detector, canvas, ctx, canvasOverlay, ctxOverlay;
-let canDetect = false;
-let width = 640;
-let height = 480;
-const detectionParams = {
-  CAMERA_INFO: {},
-  VIDEO_SIZE: { width: { exact: 640 }, height: { exact: 480 } },
-  MIN_MARKER_DISTANCE: 10,
-  MIN_MARKER_PERIMETER: 0.02,
-  MAX_MARKER_PERIMETER: 0.8,
-  SIZE_AFTER_PERSPECTIVE_REMOVAL: 49,
-  IMAGE_CONTRAST: 0,
-  IMAGE_BRIGHTNESS: 0,
-  IMAGE_GRAYSCALE: 0
-};
+const VIDEO_SIZES = [
+  { width: 320, height: 240 },
+  { width: 640, height: 480 },
+  { width: 1280, height: 720 },
+  { width: 1920, height: 1080 }
+];
 
 const MARKER_COUNT = 100;
 const MARKERS = [];
@@ -29,195 +25,140 @@ for (let i = 0; i < MARKER_COUNT; i++) {
   MARKERS.push(new Marker(i));
 }
 
-// Should this have options here? // // initialize detection stuff and hack in to detection loop Beholder.init("#detection-canvas", "#detection-canvas-overlay");
-export const init = () => {
-  canvas = document.querySelector('#detection-canvas');
-  ctx = canvas.getContext('2d');
-  canvasOverlay = document.querySelector('#detection-canvas-overlay');
-  ctxOverlay = canvasOverlay.getContext('2d');
+// This has side effects to the MARKERS array so users can access it
+const updateMarkers = ([markerChange, ocanvas, octx]) => {
+  const [markers, dt] = markerChange;
+  octx.clearRect(0, 0, ocanvas.width, ocanvas.height);
 
-  video = document.createElement('video');
-  video.id = 'beholder-video';
-  video.autoplay = 'true';
-  video.style = `display: none;`;
+  markers.forEach(m => {
+    if (m.id < MARKERS.length) {
+      MARKERS[m.id].update(m);
+    }
 
-  document.body.appendChild(video);
-  initUI();
-  startCameraFeed();
-}
-
-let canShow = false;
-let shown = false;
-
-export const getAllMarkers = () => {
-  return MARKERS;
-}
-
-export const setCamera = (camID) => {
-  detectionParams.CAMERA_INFO.exact = camID;
-  startCameraFeed();
-}
-
-
-export const setVideoSize = (val) => {
-  detectionParams.VIDEO_SIZE = VIDEO_SIZE_OPTIONS[val];
-  startCameraFeed();
-};
-
-export const getCameraFeeds = () => {
-  return navigator.mediaDevices.enumerateDevices();
-};
-
-let videoStream;
-export const startCameraFeed = () => {
-  if (videoStream) videoStream.getTracks().forEach(track => track.stop());
-
-  if (navigator.mediaDevices.getUserMedia === undefined) {
-    navigator.mediaDevices.getUserMedia = function(constraints) {
-      var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
-      if (!getUserMedia) {
-        return Promise.reject(
-          new Error("getUserMedia is not implemented in this browser")
-        );
-      }
-
-      return new Promise(function(resolve, reject) {
-        getUserMedia.call(navigator, constraints, resolve, reject);
-      });
-    };
-  }
-
-  navigator.mediaDevices
-    .getUserMedia({
-      video: {
-        width: detectionParams.VIDEO_SIZE.width,
-        height: detectionParams.VIDEO_SIZE.height,
-        deviceId: detectionParams.CAMERA_INFO
-      }
-    })
-    .then(stream => {
-      if ("srcObject" in video) {
-        video.srcObject = stream;
-      } else {
-        video.src = window.URL.createObjectURL(stream);
-      }
-
-      videoStream = stream;
-      detector = new aruco.Detector();
-      canDetect = true;
-    })
-    .catch(err => {
-      console.log(err.name + ": " + err.message);
+    const center = m.center;
+    const corners = m.corners;
+    const angle = MARKERS[m.id].rotation;
+  
+    octx.strokeStyle = "#FF00AA";
+    octx.beginPath();
+  
+    corners.forEach((c, i) => {
+      octx.moveTo(c.x, c.y);
+      let c2 = corners[(i + 1) % corners.length];
+      octx.lineTo(c2.x, c2.y);
     });
+  
+    octx.stroke();
+    octx.closePath();
+  
+    // draw first corner
+    octx.strokeStyle = "blue";
+    octx.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
+  
+    octx.strokeStyle = "#FF00AA";
+    octx.strokeRect(center.x - 1, center.y - 1, 2, 2);
+  
+    octx.font = "12px monospace";
+    octx.textAlign = "center";
+    octx.fillStyle = "#FF55AA";
+    octx.fillText(`ID=${m.id}`, center.x, center.y - 7);
+    octx.fillText(angle.toFixed(2), center.x, center.y + 15);
+  });
+
+  MARKERS.forEach(m => m.updatePresence(dt));
 };
 
-export const getVideoStream = () => {
-  return videoStream;
+function main(sources) {
+  const toggleHover$ = xs.merge(
+    sources.DOM.select('#toggle-screen').events('mouseover').mapTo(true),
+    sources.DOM.select('#toggle-screen').events('mouseout').mapTo(false)
+  ).startWith(false);
+
+  const showOverlay$ = sources.DOM.select('#toggle-screen')
+    .events('click')
+    .fold((prev) => !prev, true);
+
+  // Children
+  const paramsMenu = ParamsMenu(sources);
+  
+
+  const camID$ = paramsMenu.paramChange$.filter((p) => p[0] === 'CAMERA_INDEX').map((p) => p[1]).startWith(0);
+  const videoSize$ = paramsMenu.paramChange$.filter((p) => p[0] === 'VIDEO_SIZE_INDEX').map((p) => p[1]).startWith(1);
+  const canvasDom$ = videoSize$.map((s) => {
+    const size = VIDEO_SIZES[s];
+
+    return div([
+      canvas('#detection-canvas', { style: detectionCanvasStyle, attrs: { ...size } }),
+      canvas('#detection-canvas-overlay', { style: detectionCanvasOverlayStyle, attrs: { ...size } }),
+    ]);
+  });
+
+  const webcam = Webcam(sources, { videoSize$, camID$ });
+  const detection = DetectionManager(sources, { paramChange$: paramsMenu.paramChange$ });
+  const state$ = xs.combine(toggleHover$, showOverlay$);
+  const children$ = xs.combine(canvasDom$, paramsMenu.vdom$, webcam.vdom$);
+
+  const vdom$ = xs.combine(state$, children$)
+    .map(([[toggleHover, showOverlay], children]) => {
+      return div('#beholder-overlay', { style: overlayStyle }, [
+        div('#toggle-screen', { style:toggleStyle.main }, `⥂`),
+        div('#detection-panel', { style: showOverlay ? detectionPanelStyle.main : detectionPanelStyle.active }, children),
+      ]);
+    });
+
+  // Detection and draw stuff
+  const ocanvas$ = sources.DOM.select('#detection-canvas-overlay').element();
+  const octx$ = ocanvas$.map((c) => c.getContext('2d'));
+
+  xs.combine(detection.marker$, ocanvas$, octx$).subscribe({
+    next: updateMarkers,
+  });
+
+  // Init detection backend
+  // have updates from the DOM driver init side effects
+  // not sure if the canvas ref should change but we should be able to do it with a select
+  // expose update
+  const sinks = {
+    DOM: vdom$,
+  };
+  return sinks;
 }
 
-export const getMarker = (id) => {
-  // Maybe let this error?
-  if (id > MARKERS.length) {
-    return undefined;
-  }
-  return MARKERS[id];
-}
-
-export const getMarkerPair = (idA, idB) => {
-  // throw error here
-  new MarkerPair(MARKERS[idA], MARKERS[idB]);
-}
-
-const detect = () => {
-  if (canvas.width !== video.videoWidth) {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvasOverlay.width = video.videoWidth;
-    canvasOverlay.height = video.videoHeight;
-  }
-
-  if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    // Render video frame
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    imageData = ctx.getImageData(
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-    let markers = detector.detect(imageData, detectionParams);
-
-    return markers;
-  } else {
-    return [];
-  }
-}
-
-
+// this is some sloppy stuff here all to forward stuff into a stream
+let hiddenUpdate;
 let prevTime = Date.now();
-export const update = () => {
-  if (!canDetect) return;
-  const currentTime = Date.now();
-  const dt = (currentTime - prevTime) / 1000;
-  prevTime = currentTime;
-
-  const markers = detect();
-
-  // Draw detected markers here
-  if (canDetect) {
-    // draw markers here
-    const dctx = ctxOverlay;
-    dctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    dctx.lineWidth = 3;
-
-    markers.forEach(m => {
-      if (m.id < MARKERS.length) {
-        MARKERS[m.id].update(m);
+const updateDriver = (/* no sinks */) => {
+  return xs.create({
+    start: (listener) => {
+      hiddenUpdate = () => {
+        const currentTime = Date.now();
+        const dt = currentTime - prevTime;
+        prevTime = currentTime;
+        listener.next(dt);
       }
+    },
+    stop: () => {},
+  });
+}
+export const update = () => { hiddenUpdate(); };
+// end sloppy update stuff
 
-      const center = m.center;
-      const corners = m.corners;
-      const angle = MARKERS[m.id].rotation;
+// Should this have options here?
+export const init = (domRoot) => {
+  const drivers = {
+    DOM: makeDOMDriver(domRoot),
+    update: updateDriver,
+  };
 
-      dctx.strokeStyle = "#FF00AA";
-      dctx.beginPath();
-
-      corners.forEach((c, i) => {
-        dctx.moveTo(c.x, c.y);
-        let c2 = corners[(i + 1) % corners.length];
-        dctx.lineTo(c2.x, c2.y);
-      });
-
-      dctx.stroke();
-      dctx.closePath();
-
-      // draw first corner
-      dctx.strokeStyle = "blue";
-      dctx.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
-
-      dctx.strokeStyle = "#FF00AA";
-      dctx.strokeRect(center.x - 1, center.y - 1, 2, 2);
-
-      dctx.font = "12px monospace";
-      dctx.textAlign = "center";
-      dctx.fillStyle = "#FF55AA";
-      dctx.fillText(`ID=${m.id}`, center.x, center.y - 7);
-      dctx.fillText(angle.toFixed(2), center.x, center.y + 15);
-    });
-  }
-
-  MARKERS.forEach(m => m.updatePresence(currentTime));
+  run(main, drivers);
 }
 
 export default {
   init,
   update,
-  getMarker,
-  getAllMarkers,
-  getCameraFeeds,
-  setCamera,
-  setVideoSize,
+  // getMarker,
+  // getAllMarkers,
+  // getCameraFeeds,
+  // setCamera,
+  // setVideoSize,
 }

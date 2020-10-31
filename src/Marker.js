@@ -1,6 +1,6 @@
 import Vec2 from './utils/Vec2';
 
-const MARKER_TIMEOUT_DEFAULT = 1 / 20; 
+const MARKER_TIMEOUT_DEFAULT = 1000 / 20; 
 
 class Marker {
   constructor(ID) {
