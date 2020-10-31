@@ -3,7 +3,7 @@ import Beholder from '../src/index';
 let canvas, ctx;
 
 function onLoad(){
-  Beholder.init(); // optional params?
+  Beholder.init('#beholder-root'); // optional params?
 
   canvas = document.querySelector('#example-canvas');
   canvas.width = 640;

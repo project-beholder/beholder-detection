@@ -8,6 +8,7 @@ import {
 import Webcam from './Webcam';
 import DetectionManager from './DetectionManager';
 import Marker from './Marker';
+import MarkerPair from './MarkerPair';
 import ParamsMenu from './ParamsMenu';
 
 const VIDEO_SIZES = [
@@ -153,12 +154,27 @@ export const init = (domRoot) => {
   run(main, drivers);
 }
 
+export const getAllMarkers = () => {
+  return MARKERS;
+}
+
+export const getMarker = (id) => {
+  // Maybe let this error?
+  if (id > MARKERS.length) {
+    return undefined;
+  }
+  return MARKERS[id];
+}
+
+export const getMarkerPair = (idA, idB) => {
+  // throw error here
+  new MarkerPair(MARKERS[idA], MARKERS[idB]);
+}
+
 export default {
   init,
   update,
-  // getMarker,
-  // getAllMarkers,
-  // getCameraFeeds,
-  // setCamera,
-  // setVideoSize,
+  getMarker,
+  getMarkerPair,
+  getAllMarkers,
 }

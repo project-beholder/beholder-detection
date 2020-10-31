@@ -7,21 +7,11 @@ const VIDEO_SIZES = [
   { width: 1280, height: 720 },
   { width: 1920, height: 1080 }
 ];
-const detectionParams = {
-  CAMERA_INFO: {},
-  VIDEO_SIZE: { width: { exact: 640 }, height: { exact: 480 } },
-  MIN_MARKER_DISTANCE: 10,
-  MIN_MARKER_PERIMETER: 0.02,
-  MAX_MARKER_PERIMETER: 0.8,
-  SIZE_AFTER_PERSPECTIVE_REMOVAL: 49,
-  IMAGE_CONTRAST: 0,
-  IMAGE_BRIGHTNESS: 0,
-  IMAGE_GRAYSCALE: 0
-};
 
 function startCameraFeed([videoSizeIndex, camID]) {
   const videoSize = VIDEO_SIZES[videoSizeIndex];
-  // wtf is this part
+
+  // I don't really understand this part but it needs to be done every time
   if (navigator.mediaDevices.getUserMedia === undefined) {
     navigator.mediaDevices.getUserMedia = function(constraints) {
       var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -52,12 +42,10 @@ function Webcam(sources, props) {
   const videoSrc$ = xs.combine(props.videoSize$, props.camID$)
     .map((vs) => xs.fromPromise(startCameraFeed(vs)))
     .flatten();
-  // const video$ = videoSrc$.map((srcStream) => {
-  //   return video('#beholder-video', { attrs: { autoplay: true, srcObject: srcStream }, style: { display: 'none' } })
-  // });
+
   const video$ = xs.of(video('#beholder-video', { attrs: { autoplay: true }, style: { display: 'none' } }));
 
-  // fix it
+  // Attach the video element to the source stream, must be done as a side effect
   xs.combine(sources.DOM.select('#beholder-video').element(), videoSrc$)
     .subscribe({
       next: ([v, s]) => {

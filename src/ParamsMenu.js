@@ -4,41 +4,6 @@ import {
   parameterMenuStyle, parameterItemStyle, parameterItemLabelStyle, parameterItemFieldStyle
 } from './Styles';
 
-// This should inject the UI and attach listeners
-function initUI() {
-  // Detection param field changes
-  document.querySelector("#MIN_MARKER_DISTANCE")
-    .addEventListener("change", e => Beholder.setParam("MIN_MARKER_DISTANCE", e.target.value));
-  
-  document.querySelector("#MIN_MARKER_PERIMETER")
-    .addEventListener("change", e => Beholder.setParam("MIN_MARKER_PERIMETER", e.target.value));
-
-  document.querySelector("#MAX_MARKER_PERIMETER")
-    .addEventListener("change", e => Beholder.setParam("MAX_MARKER_PERIMETER", e.target.value));
-  
-  document.querySelector("#SIZE_AFTER_PERSPECTIVE_REMOVAL")
-    .addEventListener("change", e => Beholder.setParam("SIZE_AFTER_PERSPECTIVE_REMOVAL", e.target.value));
-};
-
-// filter stuff
-// document.querySelector("#IMAGE_BRIGHTNESS")
-//     .addEventListener("change", e => {
-//       Beholder.setParam("IMAGE_BRIGHTNESS", e.target.value);
-//       Beholder.filterImage();
-//     });
-  
-//   document.querySelector("#IMAGE_CONTRAST")
-//     .addEventListener("change", e => {
-//       Beholder.setParam("IMAGE_CONTRAST", e.target.value);
-//       Beholder.filterImage();
-//     });
-  
-//   document.querySelector("#IMAGE_GRAYSCALE")
-//     .addEventListener("change", e => {
-//       Beholder.setParam("IMAGE_GRAYSCALE", e.target.value);
-//       Beholder.filterImage();
-//     });
-
 function makeCameraOption(optionData, i) {
   return option({ attrs: { value: optionData.deviceId, label: optionData.label ? optionData.label : i, selected: (i === 1) } })
 }
