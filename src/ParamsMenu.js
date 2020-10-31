@@ -18,21 +18,6 @@ function initUI() {
   
   document.querySelector("#SIZE_AFTER_PERSPECTIVE_REMOVAL")
     .addEventListener("change", e => Beholder.setParam("SIZE_AFTER_PERSPECTIVE_REMOVAL", e.target.value));
-
-    document.querySelector("#VIDEO_SIZE_INDEX").addEventListener("change", e => {
-      console.log(e.target.value);
-      Beholder.setVideoSize(e.target.value);
-    });
-
-  const cameraSelect = document.querySelector("#CAMERA_INDEX");
-  Beholder.getCameraFeeds().then(feeds => {
-
-
-    cameraSelect.addEventListener("change", e => {
-      // console.log(e.target.value);
-      Beholder.setCamera(e.target.value);
-    });
-  });
 };
 
 // filter stuff
@@ -59,9 +44,9 @@ function makeCameraOption(optionData, i) {
 }
 
 function ParamsMenu(sources) {
-  const paramChange$ = sources.DOM.select('.param-input').events('change').map((e) => [e.target.id, e.target.value]).debug();
+  const paramChange$ = sources.DOM.select('.param-input').events('change').map((e) => [e.target.id, e.target.value]);
   
-  const camera$ = xs.fromPromise(navigator.mediaDevices.enumerateDevices()).debug()
+  const camera$ = xs.fromPromise(navigator.mediaDevices.enumerateDevices())
     .map((feeds) => feeds.filter((f) => f.kind === "videoinput"));
   
 
@@ -94,7 +79,7 @@ function ParamsMenu(sources) {
         span({ style: parameterItemLabelStyle }, 'Min Marker Perimeter'),
         input('#MIN_MARKER_PERIMETER.param-input', {
           style: parameterItemFieldStyle,
-          attrs: { type: 'number', name: 'MIN_MARKER_PERIMETER', min: 1, max: 50, value: 10, step: 1 }
+          attrs: { type: 'number', name: 'MIN_MARKER_PERIMETER', min: 0.01, max: 0.99, value: 0.2, step: 0.01 }
         }),
       ]),
 
@@ -102,7 +87,7 @@ function ParamsMenu(sources) {
         span({ style: parameterItemLabelStyle }, 'Max Marker Perimeter'),
         input('#MAX_MARKER_PERIMETER.param-input', {
           style: parameterItemFieldStyle,
-          attrs: { type: 'number', name: 'MAX_MARKER_PERIMETER', min: 1, max: 50, value: 10, step: 1 }
+          attrs: { type: 'number', name: 'MAX_MARKER_PERIMETER', min: 0.01, max: 0.99, value: 0.8, step: 0.01 }
         }),
       ]),
 

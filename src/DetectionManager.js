@@ -23,6 +23,13 @@ function DetectionManager(sources, props) {
   const dt$ = sources.update;
 
   const detector = new aruco.Detector();
+  props.paramChange$
+    .filter(([pname]) => (pname !== 'VIDEO_SIZE_INDEX' && pname !== 'CAMERA_INDEX'))
+    .subscribe({
+      next: ([param, value]) => {
+        detectionParams[param] = parseFloat(value);
+      },
+    });
 
   const marker$ = xs.combine(canvas$, ctx$, dt$, video$)
     .map(([canvas, ctx, dt, v]) => {
