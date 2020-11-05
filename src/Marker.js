@@ -10,8 +10,14 @@ class Marker {
     this.center = { x: 0, y: 0 };
     this.corners = [];
     this.rotation = 0;
-
+    this.scale = 29 / 640; // Default based on my markers and camera default of 640
+    this.enable3D = false;
+    this.avgPerim = 0;
     this.id = ID;
+  }
+
+  setScale(markerSize, cameraWidth) {
+    this.scale = markerSize / cameraWidth;
   }
 
   update(m) {
@@ -23,6 +29,17 @@ class Marker {
       Vec2.sub(this.corners[0], this.corners[1]),
       new Vec2(1, 0)
     );
+    const sides = this.corners.map((c, i, arr) => {
+      const dx = c.x - arr[(i + 1) % arr.length].x;
+      const dy = c.y - arr[(i + 1) % arr.length].y;
+      return Math.sqrt(dx * dx + dy * dy);
+    });
+
+    this.avgPerim = (sides[0] + sides[1] + sides[2] + sides[3]) / 4;
+
+    if (this.enable3D) {
+      this.center.z = this.avgPerim / this.scale;
+    }
   }
 
   updatePresence(dt) {
