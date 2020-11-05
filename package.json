@@ -1,6 +1,6 @@
 {
   "name": "beholder-detection",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "dist/beholder-detection.js",
   "scripts": {
@@ -43,6 +43,7 @@
     "@cycle/dom": "^22.8.0",
     "@cycle/run": "^5.5.0",
     "mathjs": "^7.2.0",
+    "ramda": "^0.27.1",
     "xstream": "^11.14.0"
   }
 }

@@ -64,29 +64,29 @@ function ParamsMenu(sources) {
         }),
       ]),
 
-      // div('.parameter-item', { style: parameterItemStyle }, [
-      //   span({ style: parameterItemLabelStyle }, 'Contrast'),
-      //   input('#IMAGE_CONTRAST', { 
-      //     style: parameterItemFieldStyle,
-      //     attrs: { type: 'number', name: 'IMAGE_CONTRAST', min: -100, max: 100, value: 0, step: 1 }
-      //   }),
-      // ]),
+      div('.parameter-item', { style: parameterItemStyle }, [
+        span({ style: parameterItemLabelStyle }, 'Contrast'),
+        input('#IMAGE_CONTRAST', { 
+          style: parameterItemFieldStyle,
+          attrs: { type: 'number', name: 'IMAGE_CONTRAST', min: -100, max: 100, value: 0, step: 1 }
+        }),
+      ]),
 
-      // div('.parameter-item', { style: parameterItemStyle }, [
-      //   span({ style: parameterItemLabelStyle }, 'Brightness'),
-      //   input('#IMAGE_BRIGHTNESS', {
-      //     style: parameterItemFieldStyle,
-      //     attrs: { type: 'number', name: 'IMAGE_BRIGHTNESS', min: -100, max: 100, value: 0, step: 1 }
-      //   }),
-      // ]),
+      div('.parameter-item', { style: parameterItemStyle }, [
+        span({ style: parameterItemLabelStyle }, 'Brightness'),
+        input('#IMAGE_BRIGHTNESS', {
+          style: parameterItemFieldStyle,
+          attrs: { type: 'number', name: 'IMAGE_BRIGHTNESS', min: -100, max: 100, value: 0, step: 1 }
+        }),
+      ]),
 
-      // div('.parameter-item', { style: parameterItemStyle }, [
-      //   span({ style: parameterItemLabelStyle }, 'Grayscale'),
-      //   input('#IMAGE_GRAYSCALE', {
-      //     style: parameterItemFieldStyle,
-      //     attrs: { type: 'number', name: 'IMAGE_GRAYSCALE', min: 0, max: 100, value: 0, step: 1 }
-      //   }),
-      // ]),
+      div('.parameter-item', { style: parameterItemStyle }, [
+        span({ style: parameterItemLabelStyle }, 'Grayscale'),
+        input('#IMAGE_GRAYSCALE', {
+          style: parameterItemFieldStyle,
+          attrs: { type: 'number', name: 'IMAGE_GRAYSCALE', min: 0, max: 100, value: 0, step: 1 }
+        }),
+      ]),
     ]));
   
   return {
