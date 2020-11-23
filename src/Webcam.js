@@ -8,8 +8,16 @@ const VIDEO_SIZES = [
   { width: 1920, height: 1080 }
 ];
 
+let vStream;
 function startCameraFeed([videoSizeIndex, camID]) {
   const videoSize = VIDEO_SIZES[videoSizeIndex];
+
+  console.log(camID, camID !== 0);
+
+  if (vStream)
+    vStream.getTracks().forEach(track => {
+    track.stop();
+  });
 
   // I don't really understand this part but it needs to be done every time
   if (navigator.mediaDevices.getUserMedia === undefined) {
@@ -54,7 +62,10 @@ function Webcam(sources, props) {
         } else {
           v.src = window.URL.createObjectURL(s);
         }
-      }
+
+        vStream = s;
+      },
+      error: e => console.log(e)
     })
   
   return {
