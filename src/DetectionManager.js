@@ -23,6 +23,10 @@ function DetectionManager(sources, props) {
   const video$ = sources.DOM.select('#beholder-video').element();
   const dt$ = sources.update;
 
+  const flip$ = sources.DOM.select('#IMAGE_FLIP').events('change')
+    .map((e) => e.target.checked)
+    .startWith(false);
+
   const contrast$ = sources.DOM.select('#IMAGE_CONTRAST').events('change')
     .map((e) => e.target.value)
     .startWith(0)
@@ -52,16 +56,28 @@ function DetectionManager(sources, props) {
       },
     });
 
+  const camMod$ = xs.combine(filter$, flip$);
+
   const marker$ = xs.combine(canvas$, ctx$, dt$, video$)
-    .compose(sampleCombine(filter$)) // we don't want to trigger detection when filters change
-    .map(([drawVars, filters]) => {
+    .compose(sampleCombine(camMod$)) // we don't want to trigger detection when filters change
+    .map(([drawVars, [filters, flip]]) => {
       const [canvas, ctx, dt, v] = drawVars;
 
       if (v.readyState === v.HAVE_ENOUGH_DATA) {
         // apply filter here
         ctx.filter = filters;
-        // Render video frame
-        ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+
+        if (flip) {
+          ctx.save();
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+          // Render video frame
+          ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+          ctx.restore();
+        } else {
+          // Render video frame
+          ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+        }
     
         let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
         return [detector.detect(imageData, detectionParams), dt];

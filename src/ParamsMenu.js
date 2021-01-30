@@ -87,6 +87,14 @@ function ParamsMenu(sources) {
           attrs: { type: 'number', name: 'IMAGE_GRAYSCALE', min: 0, max: 100, value: 0, step: 1 }
         }),
       ]),
+
+      div('.parameter-item', { style: parameterItemStyle }, [
+        span({ style: parameterItemLabelStyle }, 'Flip Camera'),
+        input('#IMAGE_FLIP', {
+          style: parameterItemFieldStyle,
+          attrs: { type: 'checkbox', name: 'IMAGE_FLIP', value: 0 }
+        }),
+      ]),
     ]));
   
   return {
