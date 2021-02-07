@@ -22,24 +22,19 @@ const VIDEO_SIZES = [
 const MARKER_COUNT = 100;
 const MARKERS = [];
 
-// Create marker 
-for (let i = 0; i < MARKER_COUNT; i++) {
-  MARKERS.push(new Marker(i));
-}
-
 // This has side effects to the MARKERS array so users can access it
 const updateMarkers = ([markerChange, ocanvas, octx]) => {
   const [markers, dt] = markerChange;
   octx.clearRect(0, 0, ocanvas.width, ocanvas.height);
 
-  markers.forEach(m => {
-    if (m.id < MARKERS.length) {
-      MARKERS[m.id].update(m);
-    }
+  markers.forEach(detectedMarker => {
+    const m = MARKERS.find((x) => x.id === detectedMarker.id);
 
-    const center = m.center;
-    const corners = m.corners;
-    const angle = MARKERS[m.id].rotation;
+    if (m === undefined) return;
+
+    const center = detectedMarker.center;
+    const corners = detectedMarker.corners;
+    const angle = m.rotation;
   
     octx.strokeStyle = "#FF00AA";
     octx.beginPath();
@@ -178,7 +173,17 @@ const defaultConfig = {
 }
 
 // Should this have options here?
-export const init = (domRoot, userConfig) => {
+export const init = (domRoot, userConfig, markerList) => {
+  if (markerList) {
+    if (markerList.length <= 0) console.warn('BEHOLDER WARNING: your provided list of markers is empty, no markers will be tracked');
+
+    markerList.forEach(id => MARKERS.push(new Marker(id)));
+  } else {
+    for (let i = 0; i < MARKER_COUNT; i++) {
+      MARKERS.push(new Marker(i));
+    }
+  }
+
   // If it's undefined just intialize with an empty config
   let config = defaultConfig;
   if (userConfig) {
@@ -201,11 +206,8 @@ export const getAllMarkers = () => {
 }
 
 export const getMarker = (id) => {
-  // Maybe let this error?
-  if (id > MARKERS.length) {
-    return undefined;
-  }
-  return MARKERS[id];
+  // Maybe have this error if you are looking for an untracked marker
+  return MARKERS.find((x) => x.id === id);
 }
 
 export const getMarkerPair = (idA, idB) => {

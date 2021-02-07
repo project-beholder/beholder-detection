@@ -23,9 +23,11 @@ const Beholder = window['beholder-detection'];
 
 
 ### General Functions
+A '*' indicates an optional parameter.
+
 | syntax | usage |
 | --- | --- |
-| `init('dom-selector', config)` | Initializes Beholder and appeneds needed elements to the DOM (video and webgl canvas). Requires you to pass a root dom element to append objects to. See details on config below |
+| `init('dom-selector', config*, markerList*)` | Initializes Beholder and appeneds needed elements to the DOM (video and webgl canvas). Requires you to pass a root dom element to append objects to. See details on config below. MarkerList is an array of integer marker ids you wish to track (defaults to [0-99]) |
 | `update()` | Runs detection code and updates all marker objects |
 | `show()` | Reveals detection overlay |
 | `hide()` | Hides detection overlay |
@@ -33,7 +35,6 @@ const Beholder = window['beholder-detection'];
 #### Custom Config
 The config passed in on the initialize function can be used to set various parameters of the Beholder popup in default states. To change these parameters you must pass and object that mirrors the following structure.
 ```
-
 {
     camera_params: {
         videoSize: 1 // The video size values map to the following [320 x 240, 640 x 480, 1280 x 720, 1920 x 1080]
