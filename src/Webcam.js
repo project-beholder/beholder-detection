@@ -12,8 +12,6 @@ let vStream;
 function startCameraFeed([videoSizeIndex, camID]) {
   const videoSize = VIDEO_SIZES[videoSizeIndex];
 
-  console.log(camID, camID !== 0);
-
   if (vStream)
     vStream.getTracks().forEach(track => {
     track.stop();

@@ -1,4 +1,5 @@
 import xs from 'xstream';
+import pairwise from 'xstream/extra/pairwise'
 import { run } from '@cycle/run';
 import { makeDOMDriver, div, canvas } from '@cycle/dom';
 import {
@@ -81,10 +82,17 @@ function main(sources) {
 
   // Children
   const paramsMenu = ParamsMenu(sources);
-  
 
-  const camID$ = paramsMenu.paramChange$.filter((p) => p[0] === 'CAMERA_INDEX').map((p) => p[1]).startWith(0);
-  const videoSize$ = paramsMenu.paramChange$.filter((p) => p[0] === 'VIDEO_SIZE_INDEX').map((p) => p[1]).startWith(1);
+  const camID$ = paramsMenu.camID$;
+
+  // this makes it so it doesn't trigger every time the config updates but only on this field changing
+  const videoSize$ = sources.config.map(c => c.camera_params.videoSize)
+    .startWith(-1)
+    .compose(pairwise)
+    .filter(([a, b]) => a !== b)
+    .map(([a, b]) => b)
+    .startWith(0);
+
   const canvasDom$ = videoSize$.map((s) => {
     const size = VIDEO_SIZES[s];
 
@@ -95,7 +103,7 @@ function main(sources) {
   });
 
   const webcam = Webcam(sources, { videoSize$, camID$ });
-  const detection = DetectionManager(sources, { paramChange$: paramsMenu.paramChange$ });
+  const detection = DetectionManager(sources);
   const state$ = xs.combine(toggleHover$, showOverlay$);
   const children$ = xs.combine(canvasDom$, paramsMenu.vdom$, webcam.vdom$);
 
@@ -121,6 +129,7 @@ function main(sources) {
   // expose update
   const sinks = {
     DOM: vdom$,
+    config: paramsMenu.configUpdate$,
   };
   return sinks;
 }
@@ -144,11 +153,44 @@ const updateDriver = (/* no sinks */) => {
 export const update = () => { hiddenUpdate(); };
 // end sloppy update stuff
 
+function makeConfigDiver(startConfig) {
+  return (sink$) => {
+    // return sink$.startWith(startConfig);
+    return xs.merge(xs.of((s) => s), sink$)
+      .fold((state, mod) => mod(state), startConfig);
+  };
+}
+
+const defaultConfig = {
+  camera_params: { videoSize: 1 },
+  detection_params: {
+    minMarkerDistance: 10,
+    minMarkerPerimeter: 0.02,
+    maxMarkerPerimeter: 0.8,
+    sizeAfterPerspectiveRemoval: 49,
+  },
+  feed_params: {
+    contrast: 0,
+    brightness: 0,
+    grayscale: 0,
+    flip: false,
+  },
+}
+
 // Should this have options here?
-export const init = (domRoot) => {
+export const init = (domRoot, userConfig) => {
+  // If it's undefined just intialize with an empty config
+  let config = defaultConfig;
+  if (userConfig) {
+    if (userConfig.camera_params) config.camera_params = { ...config.camera_params, ...userConfig.camera_params };
+    if (userConfig.detection_params) config.detection_params = { ...config.detection_params, ...userConfig.detection_params };
+    if (userConfig.feed_params) config.feed_params = { ...config.feed_params, ...userConfig.feed_params };
+  }
+
   const drivers = {
     DOM: makeDOMDriver(domRoot),
     update: updateDriver,
+    config: makeConfigDiver(config),
   };
 
   run(main, drivers);

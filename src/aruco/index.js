@@ -84,21 +84,21 @@ AR.Detector.prototype.detect = function(image, detectionParams){
 
   this.candidates = this.findCandidates(
     this.contours,
-    image.width * detectionParams.MIN_MARKER_PERIMETER,
-    image.width * detectionParams.MAX_MARKER_PERIMETER,
+    image.width * detectionParams.minMarkerPerimeter,
+    image.width * detectionParams.maxMarkerPerimeter,
     0.05,
     10
   );
   this.candidates = this.clockwiseCorners(this.candidates);
   this.candidates = this.notTooNear(
     this.candidates,
-    detectionParams.MIN_MARKER_DISTANCE
+    detectionParams.minMarkerDistance
   );
 
   return this.findMarkers(
     this.grey,
     this.candidates,
-    detectionParams.SIZE_AFTER_PERSPECTIVE_REMOVAL
+    detectionParams.sizeAfterPerspectiveRemoval
   );
 };
 

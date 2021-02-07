@@ -5,69 +5,43 @@ import aruco from './aruco/index.js';
 
 // DETECTION PARAMS SIDE EFFECTS HERE
 // DO NOT NEED CANVAS
-const detectionParams = {
+let detectionParams = {
   CAMERA_INFO: {},
   VIDEO_SIZE: { width: { exact: 640 }, height: { exact: 480 } },
-  MIN_MARKER_DISTANCE: 10,
-  MIN_MARKER_PERIMETER: 0.02,
-  MAX_MARKER_PERIMETER: 0.8,
-  SIZE_AFTER_PERSPECTIVE_REMOVAL: 49,
-  IMAGE_CONTRAST: 0,
-  IMAGE_BRIGHTNESS: 0,
-  IMAGE_GRAYSCALE: 0
+  minMarkerDistance: 10,
+  minMarkerPerimeter: 0.02,
+  maxMarkerPerimeter: 0.8,
+  sizeAfterPerspectiveRemoval: 49,
 };
 
-function DetectionManager(sources, props) {
+function DetectionManager(sources) {
   const canvas$ = sources.DOM.select('#detection-canvas').element();
   const ctx$ = canvas$.map((c) => c.getContext('2d'));
   const video$ = sources.DOM.select('#beholder-video').element();
   const dt$ = sources.update;
 
-  const flip$ = sources.DOM.select('#IMAGE_FLIP').events('change')
-    .map((e) => e.target.checked)
-    .startWith(false);
-
-  const contrast$ = sources.DOM.select('#IMAGE_CONTRAST').events('change')
-    .map((e) => e.target.value)
-    .startWith(0)
-    .map(v => (100 + Math.floor(v)) / 100)
-    .map(v => `contrast(${v})`);
-
-  const brightness$ = sources.DOM.select('#IMAGE_BRIGHTNESS').events('change')
-    .map((e) => e.target.value)
-    .startWith(0)
-    .map(v => (100 + Math.floor(v)) / 100)
-    .map(v => `brightness(${v})`);
-
-  const grayscale$ = sources.DOM.select('#IMAGE_GRAYSCALE').events('change')
-    .map((e) => e.target.value)
-    .startWith(0)
-    .map(v => Math.floor(v) / 100)
-    .map(v => `grayscale(${v})`);
-  
-  const filter$ = xs.combine(contrast$, brightness$, grayscale$).map(R.join(' '));
-
   const detector = new aruco.Detector();
-  props.paramChange$
-    .filter(([pname]) => (pname !== 'VIDEO_SIZE_INDEX' && pname !== 'CAMERA_INDEX'))
-    .subscribe({
-      next: ([param, value]) => {
-        detectionParams[param] = parseFloat(value);
-      },
-    });
-
-  const camMod$ = xs.combine(filter$, flip$);
+  sources.config.subscribe({
+    next: (c) => {
+      detectionParams = {
+        ...detectionParams,
+        ...c.detection_params, // incoming params, should only replace marker size stuff
+      };
+    }
+  });
 
   const marker$ = xs.combine(canvas$, ctx$, dt$, video$)
-    .compose(sampleCombine(camMod$)) // we don't want to trigger detection when filters change
-    .map(([drawVars, [filters, flip]]) => {
+    .compose(sampleCombine(sources.config)) // we don't want to trigger detection when filters change
+    .map(([drawVars, { feed_params }]) => {
       const [canvas, ctx, dt, v] = drawVars;
 
       if (v.readyState === v.HAVE_ENOUGH_DATA) {
         // apply filter here
-        ctx.filter = filters;
+        ctx.filter = `contrast(${(100 + Math.floor(feed_params.contrast)) / 100})
+         brightness(${(100 + Math.floor(feed_params.brightness)) / 100})
+         grayscale(${Math.floor(feed_params.grayscale) / 100})`;
 
-        if (flip) {
+        if (feed_params.flip) {
           ctx.save();
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
