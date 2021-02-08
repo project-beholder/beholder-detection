@@ -9,7 +9,7 @@ const VIDEO_SIZES = [
 ];
 
 let vStream;
-function startCameraFeed([videoSizeIndex, camID]) {
+function startCameraFeed([videoSizeIndex, camID, isRear]) {
   const videoSize = VIDEO_SIZES[videoSizeIndex];
 
   if (vStream)
@@ -39,13 +39,19 @@ function startCameraFeed([videoSizeIndex, camID]) {
       video: {
         width: videoSize.width,
         height: videoSize.height,
-        deviceId: camID !== 0 ? { exact: camID } : {},
+        deviceId: (camID !== 0 && !isRear) ? { exact: camID } : {},
+        facingMode: isRear ? { exact: 'environment' } : {},
       }
     });
 };
 
 function Webcam(sources, props) {
-  const videoSrc$ = xs.combine(props.videoSize$, props.camID$)
+  const rear$ = sources.config
+    .map((c) => c.camera_params.rearCamera)
+    .take(2); // This is a hack to ignore default config just in case an ignore all config updates later
+    // but it since it's only set on startup it should be fine.
+
+  const videoSrc$ = xs.combine(props.videoSize$, props.camID$, rear$)
     .map((vs) => xs.fromPromise(startCameraFeed(vs)))
     .flatten();
 

@@ -1,5 +1,5 @@
 # Beholder Detection
-This is the marker detection component of Beholder. Current Version 1.0.5
+This is the marker detection component of Beholder. Current Version 1.1.3
 
 ## Installation
 ```
@@ -38,7 +38,8 @@ The config passed in on the initialize function can be used to set various param
 {
     camera_params: {
         videoSize: 1, // The video size values map to the following [320 x 240, 640 x 480, 1280 x 720, 1920 x 1080]
-        torch: false, // Boolean value for if torch/flashlight is on. Only works for rear facing mobile cameras
+        rearCamera: false, // Boolean value for defaulting to the rear facing camera. Only works on mobile
+        torch: false, // Boolean value for if torch/flashlight is on. Only works for rear facing mobile cameras. Can only be set from init
     },
     detection_params: {
         minMarkerDistance: 10,

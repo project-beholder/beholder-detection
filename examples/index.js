@@ -2,7 +2,7 @@ import Beholder from '../src/index';
 
 function onLoad(){
   // Initialize beholder
-  Beholder.init('#beholder-root', { feed_params: { contrast: 0, brightness: 0, flip: false }}); 
+  Beholder.init('#beholder-root', { camera_params: { rearCamera: true }}); 
 
   requestAnimationFrame(update);
 }
