@@ -27,7 +27,7 @@ function makeCameraOption(optionData, i) {
 
 function ParamsMenu(sources) {
   const paramChange$ = sources.DOM.select('.param-input').events('change')
-    .map((e) => [e.target.id, e.target.id === 'feed_params-flip' ? e.target.checked : e.target.value]); //stupid edge case for checkboxes, might want to merge instead
+    .map((e) => [e.target.id, e.target.classList.contains('isCheck') ? e.target.checked : e.target.value]); //stupid edge case for checkboxes, might want to merge instead
 
   const camera$ = xs.fromPromise(navigator.mediaDevices.enumerateDevices())
     .map((feeds) => feeds.filter((f) => f.kind === "videoinput"));
@@ -107,15 +107,23 @@ function ParamsMenu(sources) {
 
       div('.parameter-item', { style: parameterItemStyle }, [
         span({ style: parameterItemLabelStyle }, 'Flip Camera'),
-        input('#feed_params-flip.param-input', {
+        input('#feed_params-flip.param-input.isCheck', {
           style: parameterItemFieldStyle,
           attrs: { type: 'checkbox', name: 'IMAGE_FLIP', checked: config.feed_params.flip }
+        }),
+      ]),
+
+      div('.parameter-item', { style: parameterItemStyle }, [
+        span({ style: parameterItemLabelStyle }, 'Torch Active'),
+        input('#camera_params-torch.param-input.isCheck', {
+          style: parameterItemFieldStyle,
+          attrs: { type: 'checkbox', name: 'TORCH', checked: config.camera_params.torch }
         }),
       ]),
     ]));
   
   // THIS IS A HACK TO MAKE PARAMS WORK FOR SOME REASON
-  vdom$.subscribe({ next: () => console.log(), });
+  // vdom$.subscribe({ next: () => console.log(), });
 
   const camID$ = paramChange$.filter((p) => p[0] === 'CAMERA_INDEX').map((p) => p[1]).startWith(0);
   const configUpdate$ = paramChange$.filter((p) => p[0] !== 'CAMERA_INDEX')
@@ -123,7 +131,7 @@ function ParamsMenu(sources) {
       // THIS REQUIRES ALL OTHER FIELDS TO FIT THE FORMAT HERE
       return (s) => {
         const [cat, name] = field.split('-');
-        s[cat][name] = name !== 'flip' ? parseFloat(value) : value;
+        s[cat][name] = typeof value !== "boolean" ? parseFloat(value) : value;
         return s;
       }
     });

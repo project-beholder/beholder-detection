@@ -88,6 +88,13 @@ function main(sources) {
     .map(([a, b]) => b)
     .startWith(0);
 
+  const torch$ = sources.config.map(c => c.camera_params.torch)
+    .startWith(false)
+    .compose(pairwise)
+    .filter(([a, b]) => a !== b)
+    .map(([a, b]) => b)
+    .startWith(false);
+
   const canvasDom$ = videoSize$.map((s) => {
     const size = VIDEO_SIZES[s];
 
@@ -97,7 +104,7 @@ function main(sources) {
     ]);
   });
 
-  const webcam = Webcam(sources, { videoSize$, camID$ });
+  const webcam = Webcam(sources, { videoSize$, camID$, torch$ });
   const detection = DetectionManager(sources);
   const state$ = xs.combine(toggleHover$, showOverlay$);
   const children$ = xs.combine(canvasDom$, paramsMenu.vdom$, webcam.vdom$);
@@ -157,7 +164,10 @@ function makeConfigDiver(startConfig) {
 }
 
 const defaultConfig = {
-  camera_params: { videoSize: 1 },
+  camera_params: {
+    videoSize: 1,
+    torch: false,
+  },
   detection_params: {
     minMarkerDistance: 10,
     minMarkerPerimeter: 0.02,

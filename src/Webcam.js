@@ -52,9 +52,9 @@ function Webcam(sources, props) {
   const video$ = xs.of(video('#beholder-video', { attrs: { autoplay: true }, style: { display: 'none' } }));
 
   // Attach the video element to the source stream, must be done as a side effect
-  xs.combine(sources.DOM.select('#beholder-video').element(), videoSrc$)
+  xs.combine(sources.DOM.select('#beholder-video').element(), videoSrc$, props.torch$)
     .subscribe({
-      next: ([v, s]) => {
+      next: ([v, s, torch]) => {
         if ("srcObject" in v) {
           v.srcObject = s;
         } else {
@@ -62,6 +62,20 @@ function Webcam(sources, props) {
         }
 
         vStream = s;
+
+        // Clements turn on the flashlight code, feels hacky
+        const track = s.getVideoTracks()[0];
+        //Create image capture object and get camera capabilities
+        const imageCapture = new ImageCapture(track);
+
+        const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
+          //todo: check if camera has a torch
+          if (track.getCapabilities().torch !== undefined) {
+            track.applyConstraints({
+              advanced: [{ torch }]
+            });
+          }
+        });
       },
       error: e => console.log(e)
     })

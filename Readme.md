@@ -37,7 +37,8 @@ The config passed in on the initialize function can be used to set various param
 ```
 {
     camera_params: {
-        videoSize: 1 // The video size values map to the following [320 x 240, 640 x 480, 1280 x 720, 1920 x 1080]
+        videoSize: 1, // The video size values map to the following [320 x 240, 640 x 480, 1280 x 720, 1920 x 1080]
+        torch: false, // Boolean value for if torch/flashlight is on. Only works for rear facing mobile cameras
     },
     detection_params: {
         minMarkerDistance: 10,
