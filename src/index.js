@@ -31,6 +31,7 @@ const updateMarkers = ([markerChange, ocanvas, octx]) => {
     const m = MARKERS.find((x) => x.id === detectedMarker.id);
 
     if (m === undefined) return;
+    m.update(detectedMarker);
 
     const center = detectedMarker.center;
     const corners = detectedMarker.corners;
