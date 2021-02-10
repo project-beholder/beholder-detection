@@ -7,7 +7,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'beholder-detection.js',
     library: 'beholder-detection',
-    libraryTarget: 'umd',
+    libraryTarget: 'commonjs2',
   },
 
   module: {
@@ -21,12 +21,6 @@ module.exports = {
   },
 
   externals: {
-    "pixi.js": {
-      commonjs: 'pixi.js',
-      commonjs2: 'pixi.js',
-      amd: 'pixi.js',
-      root: 'PIXI',
-    },
     "mathjs": {
       commonjs: 'mathjs',
       commonjs2: 'mathjs',
