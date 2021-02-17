@@ -7,7 +7,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     filename: 'beholder-detection.js',
     library: 'beholder-detection',
-    libraryTarget: 'commonjs2',
+    libraryTarget: 'umd',
   },
 
   module: {
