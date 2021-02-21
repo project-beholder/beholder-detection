@@ -7,7 +7,7 @@ class Marker {
     this.timeout = MARKER_TIMEOUT_DEFAULT;
     this.timestamp = this.timeout;
     this.present = false;
-    this.center = { x: 0, y: 0 };
+    this.center = new Vec2(0,0);
     this.corners = [];
     this.rotation = 0;
     this.scale = 29 / 640; // Default based on my markers and camera default of 640
@@ -23,7 +23,8 @@ class Marker {
   update(m) {
     this.timestamp = 0;
     this.present = true;
-    this.center = m.center;
+    this.center.x = m.center.x;
+    this.center.y = m.center.y;
     this.corners = m.corners.map(c => c);
     this.rotation = Vec2.angleBetween(
       Vec2.sub(this.corners[0], this.corners[1]),
