@@ -36,6 +36,10 @@ export const toggleStyle = {
   },
 };
 
+export const noOverlayStyle = {
+  display: 'none',
+};
+
 export const overlayStyle = {
   position: 'absolute',
   top: 0,

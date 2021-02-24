@@ -1,5 +1,5 @@
 # Beholder Detection
-This is the marker detection component of Beholder. Current Version 1.1.8
+This is the marker detection component of Beholder. Current Version 1.1.10
 
 ## Installation
 ```
@@ -11,7 +11,12 @@ or you can use UNPKG
 ```
 
 ## Usage
-Basic Example
+
+## The Markers
+Beholder currently esclusively uses a Javascript port of the Aruco fiducial marker detection library. The source for the port can be found [here](https://github.com/jcmellado/js-aruco) and the Original Project can be found [here](http://www.uco.es/investiga/grupos/ava/node/26). To use Beholder you must use the marker set from the Original Aruco implementation. You can get some from [here](https://chev.me/arucogen/) and in the dictionary dropdown select "Original Aruco"
+
+### Basic Import
+To use Beholder in your project, simply include it with your preferred method and
 ```
 // with require
 const Beholder = require('beholder-detection');
@@ -20,8 +25,6 @@ const Beholder = require('beholder-detection');
 const Beholder = window['beholder-detection'];
 ```
 
-
-
 ### General Functions
 A '*' indicates an optional parameter.
 
@@ -29,6 +32,7 @@ A '*' indicates an optional parameter.
 | --- | --- |
 | `init('dom-selector', config*, markerList*)` | Initializes Beholder and appeneds needed elements to the DOM (video and webgl canvas). Requires you to pass a root dom element to append objects to. See details on config below. MarkerList is an array of integer marker ids you wish to track (defaults to [0-99]) |
 | `update()` | Runs detection code and updates all marker objects |
+| `addVideoStreamListener(callback)` | Video streams must be requested asnychronously and must be re-established when changing any parameters of the stream. The callback passed here will recieve a videostream which can be used as the source for an HTML media element.|
 | `show()` | Reveals detection overlay |
 | `hide()` | Hides detection overlay |
 
@@ -53,6 +57,10 @@ The config passed in on the initialize function can be used to set various param
         grayscale: 0,
         flip: false,
    },
+   overlay_params: {
+       present: true, // Determines if the Beholder overlay will display or be invisible entirely via display: none
+       hide: true, // Determines if the overlay should be hidden on the left of the screen or visible
+   }
 }
 ```
 

@@ -9,6 +9,11 @@ const VIDEO_SIZES = [
 ];
 
 let vStream;
+const vStreamListeners = [];
+export const addVideoStreamListener = (listener) => {
+  vStreamListeners.push(listener);
+}
+
 function startCameraFeed([videoSizeIndex, camID, isRear]) {
   const videoSize = VIDEO_SIZES[videoSizeIndex];
 
@@ -69,19 +74,28 @@ function Webcam(sources, props) {
 
         vStream = s;
 
-        // Clements turn on the flashlight code, feels hacky
-        const track = s.getVideoTracks()[0];
-        //Create image capture object and get camera capabilities
-        const imageCapture = new ImageCapture(track);
+        // Call all listeners to pass them the v stream
+        vStreamListeners.forEach(l => l(vStream));
 
-        const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
-          //todo: check if camera has a torch
-          if (track.getCapabilities().torch !== undefined) {
-            track.applyConstraints({
-              advanced: [{ torch }]
+        if (torch) {
+          if (ImageCapture) {
+            // Clements turn on the flashlight code, feels hacky
+            const track = s.getVideoTracks()[0];
+            //Create image capture object and get camera capabilities
+            const imageCapture = new ImageCapture(track);
+
+            const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
+              //todo: check if camera has a torch
+              if (track.getCapabilities().torch !== undefined) {
+                track.applyConstraints({
+                  advanced: [{ torch }]
+                });
+              }
             });
+          } else {
+            console.warn('BEHOLDER WARNS: Flahslight/Torch functionality is not supported on this device or platform')
           }
-        });
+        }
       },
       error: e => console.log(e)
     })

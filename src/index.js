@@ -3,10 +3,10 @@ import pairwise from 'xstream/extra/pairwise'
 import { run } from '@cycle/run';
 import { makeDOMDriver, div, canvas } from '@cycle/dom';
 import {
-  toggleStyle, overlayStyle, detectionPanelStyle, detectionCanvasStyle, detectionCanvasOverlayStyle
+  toggleStyle, noOverlayStyle, overlayStyle, detectionPanelStyle, detectionCanvasStyle, detectionCanvasOverlayStyle
 } from './Styles';
 
-import Webcam from './Webcam';
+import Webcam, { addVideoStreamListener } from './Webcam';
 import DetectionManager from './DetectionManager';
 import Marker from './Marker';
 import MarkerPair from './MarkerPair';
@@ -72,9 +72,18 @@ function main(sources) {
     sources.DOM.select('#toggle-screen').events('mouseout').mapTo(false)
   ).startWith(false);
 
-  const showOverlay$ = sources.DOM.select('#toggle-screen')
+  const toggleOverlay$ = sources.DOM.select('#toggle-screen')
     .events('click')
-    .fold((prev) => !prev, true);
+    .mapTo((s) => {
+      s.overlay_params.hide = !s.overlay_params.hide;
+      return s;
+    });
+
+  const hideOverlay$ = sources.config
+    .map(c => c.overlay_params.hide);
+  
+  const isPresent$ = sources.config
+    .map(c => c.overlay_params.present);
 
   // Children
   const paramsMenu = ParamsMenu(sources);
@@ -107,12 +116,12 @@ function main(sources) {
 
   const webcam = Webcam(sources, { videoSize$, camID$, torch$ });
   const detection = DetectionManager(sources);
-  const state$ = xs.combine(toggleHover$, showOverlay$);
+  const state$ = xs.combine(isPresent$, hideOverlay$);
   const children$ = xs.combine(canvasDom$, paramsMenu.vdom$, webcam.vdom$);
 
   const vdom$ = xs.combine(state$, children$)
-    .map(([[toggleHover, showOverlay], children]) => {
-      return div('#beholder-overlay', { style: overlayStyle }, [
+    .map(([[isPresent, showOverlay], children]) => {
+      return div('#beholder-overlay', { style: isPresent ? overlayStyle : noOverlayStyle }, [
         div('#toggle-screen', { style:toggleStyle.main }, `⥂`),
         div('#detection-panel', { style: showOverlay ? detectionPanelStyle.main : detectionPanelStyle.active }, children),
       ]);
@@ -132,7 +141,7 @@ function main(sources) {
   // expose update
   const sinks = {
     DOM: vdom$,
-    config: paramsMenu.configUpdate$,
+    config: xs.merge(paramsMenu.configUpdate$, toggleOverlay$),
   };
   return sinks;
 }
@@ -156,10 +165,31 @@ const updateDriver = (/* no sinks */) => {
 export const update = () => { hiddenUpdate(); };
 // end sloppy update stuff
 
+// Begin sloppy show/hide stuff
+function hideOverlay(config) {
+  config.overlay_params.hide = true;
+  return config;
+}
+
+function showOverlay(config) {
+  config.overlay_params.hide = false;
+  return config;
+}
+
+const hideShow$ = xs.create();
+const hide = () => {
+  hideShow$.shamefullySendNext(hideOverlay);
+};
+const show = () => {
+  hideShow$.shamefullySendNext(showOverlay);
+};
+// End show/hide stuff
+
+// This is basically a reducer
 function makeConfigDiver(startConfig) {
   return (sink$) => {
     // return sink$.startWith(startConfig);
-    return xs.merge(xs.of((s) => s), sink$)
+    return xs.merge(xs.of((s) => s), sink$, hideShow$)
       .fold((state, mod) => mod(state), startConfig);
   };
 }
@@ -181,6 +211,10 @@ const defaultConfig = {
     grayscale: 0,
     flip: false,
   },
+  overlay_params: {
+    present: true, // if false, will set the overlay to not have any visible elements, but it will still exist in the html for detection
+    hide: true, // sets the overlay to hide on the left of the screen with a button on top
+  },
 }
 
 // Should this have options here?
@@ -197,10 +231,12 @@ export const init = (domRoot, userConfig, markerList) => {
 
   // If it's undefined just intialize with an empty config
   let config = defaultConfig;
+  // Ramda could help us here
   if (userConfig) {
     if (userConfig.camera_params) config.camera_params = { ...config.camera_params, ...userConfig.camera_params };
     if (userConfig.detection_params) config.detection_params = { ...config.detection_params, ...userConfig.detection_params };
     if (userConfig.feed_params) config.feed_params = { ...config.feed_params, ...userConfig.feed_params };
+    if (userConfig.overlay_params) config.overlay_params = { ...config.overlay_params, ...userConfig.overlay_params };
   }
 
   const drivers = {
@@ -232,4 +268,7 @@ export default {
   getMarker,
   getMarkerPair,
   getAllMarkers,
+  hide,
+  show,
+  addVideoStreamListener,
 }
