@@ -36,6 +36,10 @@ function DetectionManager(sources) {
       const [canvas, ctx, dt, v] = drawVars;
 
       if (v.readyState === v.HAVE_ENOUGH_DATA) {
+        if (v.clientWidth > 20 && canvas.width !== v.clientWidth) {
+          canvas.width = v.clientWidth;
+          canvas.height = v.clientHeight;
+        }
         // apply filter here
         ctx.filter = `contrast(${(100 + Math.floor(feed_params.contrast)) / 100})
          brightness(${(100 + Math.floor(feed_params.brightness)) / 100})
@@ -54,9 +58,10 @@ function DetectionManager(sources) {
         }
     
         let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-        return [detector.detect(imageData, detectionParams), dt];
+        let m = [detector.detect(imageData, detectionParams), dt,canvas.width,canvas.height];
+        return m;
       } else {
-        return [[], dt];
+        return [[], dt,canvas.width,canvas.height];
       }
     });
 

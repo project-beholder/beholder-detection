@@ -1,57 +1,57 @@
 export const toggleStyle = {
   main: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: '50px',
-    height: '50px',
-    background: '#000',
-    zIndex: 9999,
-    color: 'white',
-    fontSize: '20px',
-    fontWeight: 700,
-    borderRadius: '0 0 50px 0',
-    boxSizing: 'border-box',
-    cursor: 'pointer',
-    transition: 'all 100ms ease-in',
-    padding: '0 0 0 0',
+    // position: 'absolute',
+    // left: 0,
+    // top: 0,
+    // width: '50px',
+    // height: '50px',
+    // background: '#000',
+    // zIndex: 9999,
+    // color: 'white',
+    // fontSize: '20px',
+    // fontWeight: 700,
+    // borderRadius: '0 0 50px 0',
+    // boxSizing: 'border-box',
+    // cursor: 'pointer',
+    // transition: 'all 100ms ease-in',
+    // padding: '0 0 0 0',
   },
 
   active: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: '50px',
-    height: '50px',
-    background: '#000',
-    zIndex: 9999,
-    color: 'white',
-    fontSize: '20px',
-    fontWeight: 700,
-    borderRadius: '0 0 50px 0',
-    boxSizing: 'border-box',
-    cursor: 'pointer',
-    transition: 'all 100ms ease-in',
-    padding: '6px 0 0 0',
+    // position: 'absolute',
+    // left: 0,
+    // top: 0,
+    // width: '50px',
+    // height: '50px',
+    // background: '#000',
+    // zIndex: 9999,
+    // color: 'white',
+    // fontSize: '20px',
+    // fontWeight: 700,
+    // borderRadius: '0 0 50px 0',
+    // boxSizing: 'border-box',
+    // cursor: 'pointer',
+    // transition: 'all 100ms ease-in',
+    // padding: '6px 0 0 0',
   },
 };
 
 export const noOverlayStyle = {
-  display: 'none',
+  // display: 'none',
 };
 
 export const overlayStyle = {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  zIndex: 100,
+  // position: 'absolute',
+  // top: 0,
+  // left: 0,
+  // zIndex: 100,
 };
 
 export const detectionPanelStyle = {
   main: {
     position: 'absolute',
     top: 0,
-    left: '-110vw',
+    left: '-150vw',
     transition: 'all 500ms ease-in-out',
     zIndex: 999,
   },
@@ -66,61 +66,61 @@ export const detectionPanelStyle = {
 };
 
 export const detectionCanvasStyle = {
-  position: 'relative',
-  float: 'left',
-  clear: 'both',
-  borderRadius: '0 0 0.5em 0',
-  borderBottom: '4px solid #FFF',
+  // position: 'relative',
+  // float: 'left',
+  // clear: 'both',
+  // borderRadius: '0 0 0.5em 0',
+  // borderBottom: '4px solid #FFF',
 };
 
 export const detectionCanvasOverlayStyle = {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  borderRadius: '0 0 0.5em 0',
+  // position: 'absolute',
+  // top: 0,
+  // left: 0,
+  // borderRadius: '0 0 0.5em 0',
 };
 
 export const parameterMenuStyle = {
-  position: 'relative',
-  float: 'left',
-  clear: 'both',
-  margin: '1em 0 1em 0em',
-  padding: '1em 1.5em 1em 1.5em',
-  background: 'black',
-  borderRadius: '0 0.5em 0.5em 0',
-  borderBottom: '4px solid #FFF',
-  width: '23em',
+  // position: 'relative',
+  // float: 'left',
+  // clear: 'both',
+  // margin: '1em 0 1em 0em',
+  // padding: '1em 1.5em 1em 1.5em',
+  // background: 'black',
+  // borderRadius: '0 0.5em 0.5em 0',
+  // borderBottom: '4px solid #FFF',
+  // width: '23em',
 };
 
 export const parameterItemStyle = {
-  position: 'relative',
-  float: 'left',
-  clear: 'both',
-  margin: '0.25em 0 0.25em 0',
-  width: '100%',
+  // position: 'relative',
+  // float: 'left',
+  // clear: 'both',
+  // margin: '0.25em 0 0.25em 0',
+  // width: '100%',
 };
 
 export const parameterItemLabelStyle = {
-  position: 'relative',
-  float: 'left',
-  // width: '18em',
-  fontWeight: 600,
-  color: 'white',
+  // position: 'relative',
+  // float: 'left',
+  // // width: '18em',
+  // fontWeight: 600,
+  // color: 'white',
 };
 
 export const parameterItemFieldStyle = {
-  position: 'relative',
-  float: 'right',
+  // position: 'relative',
+  // float: 'right',
 };
 
-const styles = `#beholder-overlay {
+export const stringStyles = `#beholder-overlay {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 100;
 }
 
-#detectionDiv {
+#detection-panel {
   position: absolute;
   top: 0;
   left: -110vw;
@@ -128,12 +128,12 @@ const styles = `#beholder-overlay {
   z-index: 999;
 }
 
-#detectionDiv.active {
+#detection-panel.active {
   top: 0;
   left: 0;
 }
 
-#detectionDiv #detection-canvas {
+#detection-panel #detection-canvas {
   position: relative;
   float: left;
   clear: both;
@@ -141,14 +141,14 @@ const styles = `#beholder-overlay {
   border-bottom: 4px solid #FFF;
 }
 
-#detectionDiv #detection-canvas-overlay {
+#detection-panel #detection-canvas-overlay {
   position: absolute;
   top: 0;
   left: 0;
   border-radius: 0 0 0.5em 0;
 }
 
-#detectionDiv #parametersMenu {
+#detection-panel #parameters-menu {
   position: relative;
   float: left;
   clear: both;
@@ -159,14 +159,14 @@ const styles = `#beholder-overlay {
   border-bottom: 4px solid #FFF;
 }
 
-#detectionDiv #parametersMenu .parameterItem {
+#detection-panel #parameters-menu .parameter-item {
   position: relative;
   float: left;
   clear: both;
   margin: 0.25em 0 0.25em 0;
 }
 
-#detectionDiv #parametersMenu .parameterItem span {
+#detection-panel #parameters-menu .parameter-item span {
   position: relative;
   float: left;
   width: 18em;
@@ -174,7 +174,7 @@ const styles = `#beholder-overlay {
   color: white;
 }
 
-#toggleScreen {
+#toggle-screen {
   position: absolute;
   left: 0;
   top: 0;
@@ -192,6 +192,6 @@ const styles = `#beholder-overlay {
   transition: all 100ms ease-in;
 }
 
-#toggleScreen:hover, #toggleScreen:active {
+#toggle-screen:hover, #toggle-screen:active {
   padding: 6px 0 0 0;
 }`

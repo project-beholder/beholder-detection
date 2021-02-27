@@ -17,10 +17,11 @@ export const addVideoStreamListener = (listener) => {
 function startCameraFeed([videoSizeIndex, camID, isRear]) {
   const videoSize = VIDEO_SIZES[videoSizeIndex];
 
-  if (vStream)
-    vStream.getTracks().forEach(track => {
-    track.stop();
-  });
+  if (vStream) {
+      vStream.getTracks().forEach(track => {
+      track.stop();
+    });
+  }
 
   // I don't really understand this part but it needs to be done every time
   if (navigator.mediaDevices.getUserMedia === undefined) {
@@ -60,7 +61,7 @@ function Webcam(sources, props) {
     .map((vs) => xs.fromPromise(startCameraFeed(vs)))
     .flatten();
 
-  const video$ = xs.of(video('#beholder-video', { attrs: { autoplay: true }, style: { display: 'none' } }));
+  const video$ = xs.of(video('#beholder-video', { attrs: { autoplay: true } }));
 
   // Attach the video element to the source stream, must be done as a side effect
   xs.combine(sources.DOM.select('#beholder-video').element(), videoSrc$, props.torch$)

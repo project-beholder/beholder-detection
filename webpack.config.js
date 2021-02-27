@@ -17,6 +17,11 @@ module.exports = {
         exclude: /(node_modules|build)/,
         loader: 'babel-loader',
       },
+      {
+        test: /\.css$/,
+        exclude: /(node_modules|build)/,
+        loader: 'css-loader',
+      },
     ],
   },
 

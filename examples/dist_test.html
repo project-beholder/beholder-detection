@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="description" content="">
+    <meta name="author" content="Peter Gyory, Clement Zheng">
+    <meta name="theme-color" content="#B12A34">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../dist/beholder-detection.js"></script>
+    <script >
+      let Beholder = window['beholder-detection'];
+      function update() {
+        Beholder.update();
+        requestAnimationFrame(update);
+      }
+
+      window.onload = () => {
+        Beholder.init('#beholder-root');
+        requestAnimationFrame(update);
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="beholder-root"></div>
+  </body>
+</html>

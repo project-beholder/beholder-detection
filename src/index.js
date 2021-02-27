@@ -1,10 +1,12 @@
+import { empty, head, not, compose } from 'ramda';
 import xs from 'xstream';
 import pairwise from 'xstream/extra/pairwise'
 import { run } from '@cycle/run';
-import { makeDOMDriver, div, canvas } from '@cycle/dom';
+import { makeDOMDriver, div, canvas, i } from '@cycle/dom';
 import {
-  toggleStyle, noOverlayStyle, overlayStyle, detectionPanelStyle, detectionCanvasStyle, detectionCanvasOverlayStyle
+  toggleStyle, noOverlayStyle, overlayStyle, detectionPanelStyle, detectionCanvasStyle, detectionCanvasOverlayStyle, stringStyles
 } from './Styles';
+import AllStyle from './BeholderStyles.css';
 
 import Webcam, { addVideoStreamListener } from './Webcam';
 import DetectionManager from './DetectionManager';
@@ -24,7 +26,11 @@ const MARKERS = [];
 
 // This has side effects to the MARKERS array so users can access it
 const updateMarkers = ([markerChange, ocanvas, octx]) => {
-  const [markers, dt] = markerChange;
+  const [markers, dt, w, h] = markerChange;
+  if (ocanvas.width !== w) {
+    ocanvas.width = w;
+    ocanvas.height = h;
+  }
   octx.clearRect(0, 0, ocanvas.width, ocanvas.height);
 
   markers.forEach(detectedMarker => {
@@ -78,6 +84,7 @@ function main(sources) {
       s.overlay_params.hide = !s.overlay_params.hide;
       return s;
     });
+  const videoElement$ = sources.DOM.select('#beholder-video').element();
 
   const hideOverlay$ = sources.config
     .map(c => c.overlay_params.hide);
@@ -105,9 +112,9 @@ function main(sources) {
     .map(([a, b]) => b)
     .startWith(false);
 
-  const canvasDom$ = videoSize$.map((s) => {
-    const size = VIDEO_SIZES[s];
-
+  const canvasDom$ = xs.merge(
+    xs.of({ width: 320, height: 240 }),
+  ).map((size) => {
     return div([
       canvas('#detection-canvas', { style: detectionCanvasStyle, attrs: { ...size } }),
       canvas('#detection-canvas-overlay', { style: detectionCanvasOverlayStyle, attrs: { ...size } }),
@@ -123,7 +130,7 @@ function main(sources) {
     .map(([[isPresent, showOverlay], children]) => {
       return div('#beholder-overlay', { style: isPresent ? overlayStyle : noOverlayStyle }, [
         div('#toggle-screen', { style:toggleStyle.main }, `⥂`),
-        div('#detection-panel', { style: showOverlay ? detectionPanelStyle.main : detectionPanelStyle.active }, children),
+        div(`#detection-panel`, { style: showOverlay ? detectionPanelStyle.main : detectionPanelStyle.active }, children),
       ]);
     });
 
@@ -198,6 +205,7 @@ const defaultConfig = {
   camera_params: {
     videoSize: 1,
     torch: false,
+    rearCamera: false,
   },
   detection_params: {
     minMarkerDistance: 10,
@@ -228,6 +236,14 @@ export const init = (domRoot, userConfig, markerList) => {
       MARKERS.push(new Marker(i));
     }
   }
+
+  const styleElement = document.createElement('style');
+  styleElement.type = 'text/css';
+  // styleElement.type = 'text/css';
+
+  styleElement.innerHTML = `${AllStyle}`;
+
+  document.body.append(styleElement);
 
   // If it's undefined just intialize with an empty config
   let config = defaultConfig;
