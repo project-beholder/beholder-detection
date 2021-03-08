@@ -3,7 +3,7 @@ import Beholder from '../src/index';
 let m1, m2;
 function onLoad(){
   // Initialize beholder
-  Beholder.init('#beholder-root', { overlay_params: { hide: false } }); 
+  Beholder.init('#beholder-root', { overlay_params: { present: true } }); 
   m1 = Beholder.getMarker(11);
   m2 = Beholder.getMarker(0);
 
@@ -30,7 +30,7 @@ function update() {
   const dt = delta / 1000;
 
   Beholder.update();
-  // console.log(m1.present)
+  // console.log(m2.present)
   requestAnimationFrame(update);
 }
 
