@@ -44,7 +44,8 @@ class Marker {
   }
 
   updatePresence(dt) {
-    this.timestamp += dt;
+    // throttle max timeout to 50
+    this.timestamp += dt > 50 ? 50 : dt;
     this.present = (this.timestamp >= this.timeout) ? false : true;
   }
 }

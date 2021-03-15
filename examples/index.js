@@ -3,7 +3,7 @@ import Beholder from '../src/index';
 let m1, m2;
 function onLoad(){
   // Initialize beholder
-  Beholder.init('#beholder-root', { overlay_params: { present: true } }); 
+  Beholder.init('#beholder-root', { camera_params: { rearCamera: true, torch: true, videoSize: 0 }, overlay_params: { present: true } }); 
   m1 = Beholder.getMarker(11);
   m2 = Beholder.getMarker(0);
 
