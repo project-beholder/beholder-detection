@@ -1,5 +1,5 @@
 # Beholder Detection
-This is the marker detection component of Beholder. Current Version 1.1.11
+This is the marker detection component of Beholder. Current Version 1.1.12
 
 ## Installation
 ```
