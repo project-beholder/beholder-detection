@@ -73,11 +73,6 @@ const updateMarkers = ([markerChange, ocanvas, octx]) => {
 };
 
 function main(sources) {
-  const toggleHover$ = xs.merge(
-    sources.DOM.select('#toggle-screen').events('mouseover').mapTo(true),
-    sources.DOM.select('#toggle-screen').events('mouseout').mapTo(false)
-  ).startWith(false);
-
   const toggleOverlay$ = sources.DOM.select('#toggle-screen')
     .events('click')
     .mapTo((s) => {

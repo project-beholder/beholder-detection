@@ -61,7 +61,7 @@ function Webcam(sources, props) {
     .map((vs) => xs.fromPromise(startCameraFeed(vs)))
     .flatten();
 
-  const video$ = xs.of(video('#beholder-video', { attrs: { autoplay: true } }));
+  const video$ = xs.of(video('#beholder-video', { attrs: { autoplay: true, playsinline: true } }));
 
   // Attach the video element to the source stream, must be done as a side effect
   xs.combine(sources.DOM.select('#beholder-video').element(), videoSrc$, props.torch$)
@@ -72,7 +72,7 @@ function Webcam(sources, props) {
         } else {
           v.src = window.URL.createObjectURL(s);
         }
-
+        v.play();
         vStream = s;
 
         // Call all listeners to pass them the v stream

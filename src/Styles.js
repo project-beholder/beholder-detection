@@ -55,7 +55,7 @@ export const detectionPanelStyle = {
   main: {
     position: 'absolute',
     top: 0,
-    left: '-150vw',
+    left: '-1950px',
     transition: 'all 500ms ease-in-out',
     zIndex: 999,
   },

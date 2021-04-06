@@ -35,7 +35,7 @@ function DetectionManager(sources) {
     .map(([drawVars, { feed_params }]) => {
       const [canvas, ctx, dt, v] = drawVars;
 
-      if (v.readyState === v.HAVE_ENOUGH_DATA) {
+      if (v.readyState === 4) {
         if (v.clientWidth > 20 && canvas.width !== v.clientWidth) {
           canvas.width = v.clientWidth;
           canvas.height = v.clientHeight;
