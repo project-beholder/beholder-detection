@@ -24,7 +24,6 @@ export default class Vec2 {
   }
 
   static angleBetween(v1, v2) {
-    // return Math.atan2(vec1.y, vec1.x) - Math.atan2(vec2.y, vec2.x);
     return Math.atan2(
       v1.x * v2.y - v1.y * v2.x,
       v1.x * v2.x + v1.y * v2.y
@@ -149,5 +148,12 @@ export default class Vec2 {
 
   dot(v) {
     return (this.x * v.x) + (this.y * v.y);
+  }
+
+  angleBetween(v) {
+    return Math.atan2(
+      this.x * v.y - this.y * v.x,
+      this.x * v.x + this.y * v.y
+    );
   }
 }

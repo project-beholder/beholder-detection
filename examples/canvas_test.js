@@ -9,6 +9,8 @@ function onLoad(){
   canvas.width = 640;
   canvas.height = 480;
   ctx = canvas.getContext('2d');
+  Beholder.getMarker(4).positionSmoothing = 0.4;
+  Beholder.getMarker(4).rotationSmoothing = 0.4;
 
   requestAnimationFrame(update);
 }
@@ -39,6 +41,7 @@ function update() {
     ctx.stroke();
 });
 
+  console.log(Beholder.getMarker(4).deltaRotation);
   requestAnimationFrame(update);
 }
 

@@ -58,7 +58,7 @@ function DetectionManager(sources) {
         }
     
         let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-        let m = [detector.detect(imageData, detectionParams), dt,canvas.width,canvas.height];
+        let m = [detector.detect(imageData, detectionParams), dt, canvas.width, canvas.height];
         return m;
       } else {
         return [[], dt,canvas.width,canvas.height];

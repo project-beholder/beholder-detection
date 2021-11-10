@@ -121,9 +121,6 @@ function ParamsMenu(sources) {
         }),
       ]),
     ]));
-  
-  // THIS IS A HACK TO MAKE PARAMS WORK FOR SOME REASON
-  // vdom$.subscribe({ next: () => console.log(), });
 
   const camID$ = paramChange$.filter((p) => p[0] === 'CAMERA_INDEX').map((p) => p[1]).startWith(0);
   const configUpdate$ = paramChange$.filter((p) => p[0] !== 'CAMERA_INDEX')
