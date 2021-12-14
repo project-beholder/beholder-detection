@@ -124,7 +124,7 @@ function main(sources) {
   const vdom$ = xs.combine(state$, children$)
     .map(([[isPresent, showOverlay], children]) => {
       return div('#beholder-overlay', { overlayStyle }, [
-        div('#toggle-screen', { style: isPresent ? toggleStyle.main : toggleStyle.none }, `⥂`),
+        div('#toggle-screen', { style: isPresent ? toggleStyle.main : toggleStyle.none }, `☰`),
         div(`#detection-panel`, { style: showOverlay ? detectionPanelStyle.main : detectionPanelStyle.active }, children),
       ]);
     });

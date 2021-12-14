@@ -1,36 +1,37 @@
 #beholder-overlay {
-  position: absolute;
   top: 0;
   left: 0;
-  z-index: 100;
+  position: absolute;
 }
 
-/* #detection-panel {
-  position: absolute;
-  top: 0;
-  left: 10vw;
-  transition: all 500ms ease-in-out;
+#detection-panel {
+  width: min(90vw, 800px);
+  height: 90vh;
+  margin: 5vh calc(50vw - 0.5 * min(90vw, 800px));
+  box-sizing: border-box;
   z-index: 999;
+  /* display: none; */
+  background: black;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  color: white;
+  
+  font-family: monospace;
+  font-size: 12px;
 }
-
-#detection-panel.active {
-  top: 0;
-  left: 0;
-} */
 
 #detection-panel #detection-canvas {
   position: relative;
   float: left;
   clear: both;
-  border-radius: 0 0 0.5em 0;
-  border-bottom: 4px solid #FFF;
+  width: 100%;
 }
 
 #detection-panel #detection-canvas-overlay {
   position: absolute;
   top: 0;
   left: 0;
-  border-radius: 0 0 0.5em 0;
+  width: 100%;
 }
 
 #detection-panel #parameters-menu {
@@ -40,8 +41,6 @@
   margin: 1em 0 1em 0em;
   padding: 1em 1.5em 1em 1.5em;
   background: black;
-  border-radius: 0 0.5em 0.5em 0;
-  border-bottom: 4px solid #FFF;
 }
 
 #detection-panel #parameters-menu .parameter-item {
@@ -59,31 +58,31 @@
   color: white;
 }
 
+
 #toggle-screen {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 50px;
-  height: 50px;
+  left: 10px;
+  top: 10px;
+  width: 60px;
+  height: 60px;
   background: #000;
   z-index: 9999;
   color: white;
+  text-align: center;
   font-size: 20px;
-  font-weight: 700;
-  padding: 6px;
-  border-radius: 0 0 50px 0;
+  font-weight: 400;
+  padding: 18px 0;
+  border-radius: 30px;
   box-sizing: border-box;
   cursor: pointer;
   transition: all 100ms ease-in;
 }
 
 #toggle-screen:hover, #toggle-screen:active {
-  padding: 6px 0 0 0;
+  background: white;
+  color: black;
 }
 
 #beholder-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: -1;
+  display: none;
 }

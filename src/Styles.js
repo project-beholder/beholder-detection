@@ -56,7 +56,7 @@ export const detectionPanelStyle = {
     position: 'absolute',
     top: 0,
     left: '-1950px',
-    transition: 'all 500ms ease-in-out',
+    // transition: 'all 100ms ease-in-out',
     zIndex: 999,
   },
 
@@ -64,7 +64,7 @@ export const detectionPanelStyle = {
     position: 'absolute',
     top: 0,
     left: 0,
-    transition: 'all 500ms ease-in-out',
+    // transition: 'all 500ms ease-in-out',
     zIndex: 999,
   }
 };
