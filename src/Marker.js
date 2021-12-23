@@ -42,6 +42,7 @@ class Marker {
 
     this.deltaPosition.sub(this.position).scale(-1); // bc we changed center this should be cool now
 
+    // WASTED MEMORY
     this.corners = m.corners.map(c => c); // wtf, seems like a lazy way to copy, but whatever
 
     // Rotation stuff, now with smoothing!
@@ -49,11 +50,11 @@ class Marker {
     const prevRotationVec = Vec2.fromAngle(this.rotation);
     const newRotationVec = Vec2.fromAngle(this.rawRotation);
     const smoothedRotationVec = new Vec2(
-      (prevRotationVec.x * (1 - this.rotationSmoothing)) + (newRotationVec.x * this.rotationSmoothing),
-      (prevRotationVec.y * (1 - this.rotationSmoothing)) + (newRotationVec.y * this.rotationSmoothing)
+      (prevRotationVec.x * (this.rotationSmoothing)) + (newRotationVec.x * 1 - this.rotationSmoothing),
+      (prevRotationVec.y * (this.rotationSmoothing)) + (newRotationVec.y * 1 - this.rotationSmoothing)
     );
     this.rotation = smoothedRotationVec.getAngle();
-    
+
     this.deltaRotation = Vec2.angleBetween(prevRotationVec, smoothedRotationVec);
     
     // could save memory with regular for loop here, or maybe a reduce?

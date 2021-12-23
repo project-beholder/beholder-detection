@@ -7,7 +7,7 @@ function onLoad(){
     camera_params: {
       videoSize: 1,
       torch: false,
-      rearCamera: true,
+      rearCamera: false,
     },
     detection_params: {
       minMarkerDistance: 10,

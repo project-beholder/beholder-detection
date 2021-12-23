@@ -39,8 +39,8 @@ const updateMarkers = ([markerChange, ocanvas, octx]) => {
     if (m === undefined) return;
     m.update(detectedMarker);
 
-    const center = detectedMarker.center;
-    const corners = detectedMarker.corners;
+    const center = m.center;
+    const corners = m.corners;
     const angle = m.rotation;
   
     octx.strokeStyle = "#FF00AA";
