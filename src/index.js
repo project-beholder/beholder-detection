@@ -1,203 +1,13 @@
-import { empty, head, not, compose } from 'ramda';
-import xs from 'xstream';
-import pairwise from 'xstream/extra/pairwise'
-import { run } from '@cycle/run';
-import { makeDOMDriver, div, canvas, i } from '@cycle/dom';
-import {
-  toggleStyle, noOverlayStyle, overlayStyle, detectionPanelStyle, detectionCanvasStyle, detectionCanvasOverlayStyle, stringStyles
-} from './Styles';
+import WebcamManager from './Webcam.js';
+import DetectionManager from './DetectionManager.js';
+import Marker from './Marker.js';
+import MarkerPair from './MarkerPair.js';
+import CreateHTML from './HTMLOverlay.js';
 import AllStyle from './BeholderStyles.css';
-
-import Webcam, { addVideoStreamListener } from './Webcam';
-import DetectionManager from './DetectionManager';
-import Marker from './Marker';
-import MarkerPair from './MarkerPair';
-import ParamsMenu from './ParamsMenu';
-
-const VIDEO_SIZES = [
-  { width: 320, height: 240 },
-  { width: 640, height: 480 },
-  { width: 1280, height: 720 },
-  { width: 1920, height: 1080 }
-];
-
-const MARKER_COUNT = 100;
-const MARKERS = [];
-
-// This has side effects to the MARKERS array so users can access it
-const updateMarkers = ([markerChange, ocanvas, octx]) => {
-  const [markers, dt, w, h] = markerChange;
-  if (ocanvas.width !== w) {
-    ocanvas.width = w;
-    ocanvas.height = h;
-  }
-  octx.clearRect(0, 0, ocanvas.width, ocanvas.height);
-
-  markers.forEach(detectedMarker => {
-    const m = MARKERS.find((x) => x.id === detectedMarker.id);
-
-    if (m === undefined) return;
-    m.update(detectedMarker);
-
-    const center = m.center;
-    const corners = m.corners;
-    const angle = m.rotation;
-  
-    octx.strokeStyle = "#FF00AA";
-    octx.beginPath();
-  
-    corners.forEach((c, i) => {
-      octx.moveTo(c.x, c.y);
-      let c2 = corners[(i + 1) % corners.length];
-      octx.lineTo(c2.x, c2.y);
-    });
-  
-    octx.stroke();
-    octx.closePath();
-  
-    // draw first corner
-    octx.strokeStyle = "blue";
-    octx.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
-  
-    octx.strokeStyle = "#FF00AA";
-    octx.strokeRect(center.x - 1, center.y - 1, 2, 2);
-  
-    octx.font = "12px monospace";
-    octx.textAlign = "center";
-    octx.fillStyle = "#FF55AA";
-    octx.fillText(`ID=${m.id}`, center.x, center.y - 7);
-    octx.fillText(angle.toFixed(2), center.x, center.y + 15);
-  });
-
-  MARKERS.forEach(m => m.updatePresence(dt));
-};
-
-function main(sources) {
-  const toggleOverlay$ = sources.DOM.select('#toggle-screen')
-    .events('click')
-    .mapTo((s) => {
-      s.overlay_params.hide = !s.overlay_params.hide;
-      return s;
-    });
-  const videoElement$ = sources.DOM.select('#beholder-video').element();
-
-  const hideOverlay$ = sources.config
-    .map(c => c.overlay_params.hide);
-  
-  const isPresent$ = sources.config
-    .map(c => c.overlay_params.present);
-
-  // Children
-  const paramsMenu = ParamsMenu(sources);
-
-  const camID$ = paramsMenu.camID$;
-
-  // this makes it so it doesn't trigger every time the config updates but only on this field changing
-  const videoSize$ = sources.config.map(c => c.camera_params.videoSize)
-    .startWith(-1)
-    .compose(pairwise)
-    .filter(([a, b]) => a !== b)
-    .map(([a, b]) => b)
-    .startWith(0);
-
-  const torch$ = sources.config.map(c => c.camera_params.torch)
-    .startWith(false)
-    .compose(pairwise)
-    .filter(([a, b]) => a !== b)
-    .map(([a, b]) => b)
-    .startWith(false);
-
-  const canvasDom$ = xs.merge(
-    xs.of({ width: 320, height: 240 }),
-  ).map((size) => {
-    return div([
-      canvas('#detection-canvas', { style: detectionCanvasStyle, attrs: { ...size } }),
-      canvas('#detection-canvas-overlay', { style: detectionCanvasOverlayStyle, attrs: { ...size } }),
-    ]);
-  });
-
-  const webcam = Webcam(sources, { videoSize$, camID$, torch$ });
-  const detection = DetectionManager(sources);
-  const state$ = xs.combine(isPresent$, hideOverlay$);
-  const children$ = xs.combine(canvasDom$, paramsMenu.vdom$, webcam.vdom$);
-
-  const vdom$ = xs.combine(state$, children$)
-    .map(([[isPresent, showOverlay], children]) => {
-      return div('#beholder-overlay', { overlayStyle }, [
-        div('#toggle-screen', { style: isPresent ? toggleStyle.main : toggleStyle.none }, `☰`),
-        div(`#detection-panel`, { style: showOverlay ? detectionPanelStyle.main : detectionPanelStyle.active }, children),
-      ]);
-    });
-
-  // Detection and draw stuff
-  const ocanvas$ = sources.DOM.select('#detection-canvas-overlay').element();
-  const octx$ = ocanvas$.map((c) => c.getContext('2d'));
-
-  xs.combine(detection.marker$, ocanvas$, octx$).subscribe({
-    next: updateMarkers,
-  });
-
-  // Init detection backend
-  // have updates from the DOM driver init side effects
-  // not sure if the canvas ref should change but we should be able to do it with a select
-  // expose update
-  const sinks = {
-    DOM: vdom$,
-    config: xs.merge(paramsMenu.configUpdate$, toggleOverlay$),
-  };
-  return sinks;
-}
-
-// this is some sloppy stuff here all to forward stuff into a stream
-let hiddenUpdate;
-let prevTime = Date.now();
-const updateDriver = (/* no sinks */) => {
-  return xs.create({
-    start: (listener) => {
-      hiddenUpdate = () => {
-        const currentTime = Date.now();
-        const dt = currentTime - prevTime;
-        prevTime = currentTime;
-        listener.next(dt);
-      }
-    },
-    stop: () => {},
-  });
-}
-export const update = () => { hiddenUpdate(); };
-// end sloppy update stuff
-
-// Begin sloppy show/hide stuff
-function hideOverlay(config) {
-  config.overlay_params.hide = true;
-  return config;
-}
-
-function showOverlay(config) {
-  config.overlay_params.hide = false;
-  return config;
-}
-
-const hideShow$ = xs.create();
-const hide = () => {
-  hideShow$.shamefullySendNext(hideOverlay);
-};
-const show = () => {
-  hideShow$.shamefullySendNext(showOverlay);
-};
-// End show/hide stuff
-
-// This is basically a reducer
-function makeConfigDiver(startConfig) {
-  return (sink$) => {
-    // return sink$.startWith(startConfig);
-    return xs.merge(xs.of((s) => s), sink$, hideShow$)
-      .fold((state, mod) => mod(state), startConfig);
-  };
-}
 
 const defaultConfig = {
   camera_params: {
+    camID: undefined,
     videoSize: 1,
     torch: false,
     rearCamera: false,
@@ -207,6 +17,7 @@ const defaultConfig = {
     minMarkerPerimeter: 0.02,
     maxMarkerPerimeter: 0.8,
     sizeAfterPerspectiveRemoval: 49,
+    area: { start: { x: 0, y: 0 }, end: { x: 1, y: 1 } },
   },
   feed_params: {
     contrast: 0,
@@ -214,14 +25,104 @@ const defaultConfig = {
     grayscale: 0,
     flip: false,
   },
+  // TODO: These are not implemented atm, should default to hidden or no?
   overlay_params: {
     present: true, // if false, will set the overlay to not have any visible elements, but it will still exist in the html for detection
     hide: true, // sets the overlay to hide on the left of the screen with a button on top
   },
-}
+};
 
-// Should this have options here?
-export const init = (domRoot, userConfig, markerList) => {
+// some stuff for detection area
+let isSettingDetectionArea = false;
+let detectionAreaClicks = [];
+let isPanelHidden = false;
+
+const MARKER_COUNT = 100;
+const MARKERS = [];
+
+// pass this to html function
+let config = {};
+
+let webcamMan, detectionMan;
+// This has side effects to the MARKERS array so users can access it
+// which markers changed, overlay canvas, overlay ctx
+let overlayCanvas, overlayCtx, videoElement, videoCanvas, videoCtx, debugCanvas, debugCtx;
+const updateMarkers = (markerChange) => {
+  const [markers, dt] = markerChange;
+  if (videoCanvas.width !== videoElement.width) {
+    videoCanvas.width = videoElement.width;
+    videoCanvas.height = videoElement.height;
+  }
+  
+  // only draw when panel visible
+  if (!isPanelHidden) {
+    videoCtx.drawImage(videoElement, 0, 0, videoCanvas.width, videoCanvas.height);
+
+    // detection area!
+    videoCtx.strokeStyle = "#00FF00";
+    videoCtx.beginPath();
+    videoCtx.moveTo(videoCanvas.width * config.detection_params.area.start.x, videoCanvas.height * config.detection_params.area.start.y)
+    videoCtx.lineTo(videoCanvas.width * config.detection_params.area.end.x, videoCanvas.height * config.detection_params.area.start.y)
+    videoCtx.lineTo(videoCanvas.width * config.detection_params.area.end.x, videoCanvas.height * config.detection_params.area.end.y)
+    videoCtx.lineTo(videoCanvas.width * config.detection_params.area.start.x, videoCanvas.height * config.detection_params.area.end.y)
+    videoCtx.closePath();
+    videoCtx.stroke();
+  }
+
+  // const offsetX = config.detection_params.area.start.x * overlayCanvas.width;
+  // const offsetY = config.detection_params.area.start.y * overlayCanvas.height;
+  // overlayCtx.save();
+  // overlayCtx.translate(offsetX, offsetY);
+  
+  debugCanvas.width = overlayCanvas.width;
+  debugCanvas.height = overlayCanvas.height;
+  
+  if (!isPanelHidden) debugCtx.clearRect(0, 0, debugCanvas.width, debugCanvas.height);
+  
+  markers.forEach(detectedMarker => {
+    const m = MARKERS.find((x) => x.id === detectedMarker.id);
+
+    if (m === undefined) return;
+    m.update(detectedMarker);
+
+    // this is all draw code, bail if panel hidden
+    if (isPanelHidden) return;
+
+    const center = m.center;
+    const corners = m.corners;
+    const angle = m.rotation;
+  
+    debugCtx.strokeStyle = "#FF00AA";
+    debugCtx.beginPath();
+  
+    corners.forEach((c, i) => {
+      debugCtx.moveTo(c.x, c.y);
+      let c2 = corners[(i + 1) % corners.length];
+      debugCtx.lineTo(c2.x, c2.y);
+    });
+  
+    debugCtx.stroke();
+    debugCtx.closePath();
+  
+    // draw first corner
+    debugCtx.strokeStyle = "blue";
+    debugCtx.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
+  
+    debugCtx.strokeStyle = "#FF00AA";
+    debugCtx.strokeRect(center.x - 1, center.y - 1, 2, 2);
+
+    debugCtx.font = "12px monospace";
+    debugCtx.textAlign = "center";
+    debugCtx.fillStyle = "#FF55AA";
+    debugCtx.fillText(`ID=${m.id}`, center.x, center.y - 7);
+    debugCtx.fillText(angle.toFixed(2), center.x, center.y + 15);
+  });
+  // overlayCtx.restore();
+
+  MARKERS.forEach(m => m.updatePresence(dt));
+};
+
+const init = (domRoot, userConfig, markerList) => {
   if (markerList) {
     if (markerList.length <= 0) console.warn('BEHOLDER WARNING: your provided list of markers is empty, no markers will be tracked');
 
@@ -232,17 +133,11 @@ export const init = (domRoot, userConfig, markerList) => {
     }
   }
 
-  const styleElement = document.createElement('style');
-  styleElement.type = 'text/css';
-  // styleElement.type = 'text/css';
-
-  styleElement.innerHTML = `${AllStyle}`;
-
-  document.body.append(styleElement);
+  const root = document.querySelector(domRoot);
 
   // If it's undefined just intialize with an empty config
-  let config = defaultConfig;
-  // Ramda could help us here
+  config = defaultConfig;
+  // Merge default and user config
   if (userConfig) {
     if (userConfig.camera_params) config.camera_params = { ...config.camera_params, ...userConfig.camera_params };
     if (userConfig.detection_params) config.detection_params = { ...config.detection_params, ...userConfig.detection_params };
@@ -250,14 +145,155 @@ export const init = (domRoot, userConfig, markerList) => {
     if (userConfig.overlay_params) config.overlay_params = { ...config.overlay_params, ...userConfig.overlay_params };
   }
 
-  const drivers = {
-    DOM: makeDOMDriver(domRoot),
-    update: updateDriver,
-    config: makeConfigDiver(config),
-  };
+  root.innerHTML = CreateHTML(config, AllStyle);
+  videoElement = root.querySelector('#beholder-video');
+  videoElement.setAttribute("playsinline", "playsinline"); // IOS HACK HERE
+  
+  document.querySelector('#set-area-instructions').innerHTML = `
+          start=x:${config.detection_params.area.start.x.toFixed(2)},y:${config.detection_params.area.start.y.toFixed(2)}&nbsp;&nbsp;&nbsp;
+          end=x:${config.detection_params.area.end.x.toFixed(2)},y:${config.detection_params.area.end.y.toFixed(2)}
+          `;
+  
+  // Set up all of the dom events
+  root.querySelector('#toggle-screen').addEventListener('click', () => {
+    if (isPanelHidden) root.querySelector('#detection-panel').classList.remove('hidden');
+    else root.querySelector('#detection-panel').classList.add('hidden');
+    isPanelHidden = !isPanelHidden;
+  });
+  
+  isPanelHidden = config.overlay_params.hide;
+  if (isPanelHidden) root.querySelector('#detection-panel').classList.add('hidden');
+  
+  
+  // set detection area code
+  root.querySelector('#set-area').addEventListener('click', () => {
+    isSettingDetectionArea = true;
+    detectionAreaClicks = [];
+    document.querySelector('#set-area-instructions').innerHTML = `Select top-left corner.`;
+  });
+  root.querySelector('#detection-canvas-overlay').addEventListener('click', (e) => {
+    if (isSettingDetectionArea) {
+      detectionAreaClicks.push({
+        x: e.offsetX / e.target.clientWidth,
+        y: e.offsetY / e.target.clientHeight,
+      });
 
-  run(main, drivers);
+      // NEED TO SOLVE FOR EDGE CASE WHERE THE 2ND POINT IS ABOVE/BEHIND THE 1ST
+      if (detectionAreaClicks.length > 1) {
+        isSettingDetectionArea = false;
+
+        config.detection_params.area = {
+          start: {
+            x: Math.min(detectionAreaClicks[0].x, detectionAreaClicks[1].x),
+            y: Math.min(detectionAreaClicks[0].y, detectionAreaClicks[1].y),
+          },
+          end: {
+            x: Math.max(detectionAreaClicks[0].x, detectionAreaClicks[1].x),
+            y: Math.max(detectionAreaClicks[0].y, detectionAreaClicks[1].y),
+          }
+        };
+        
+        document.querySelector('#set-area-instructions').innerHTML = `
+          start=x:${config.detection_params.area.start.x.toFixed(2)},y:${config.detection_params.area.start.y.toFixed(2)}&nbsp;&nbsp;&nbsp;
+          end=x:${config.detection_params.area.end.x.toFixed(2)},y:${config.detection_params.area.end.y.toFixed(2)}
+          `;
+        
+      } else if (detectionAreaClicks.length === 1) {
+        document.querySelector('#set-area-instructions').innerHTML = `Select bottom-right corner.`;
+      }
+    }
+  });
+  
+  // reset detection area
+  root.querySelector('#clear-area').addEventListener('click', () => {
+    config.detection_params.area = {
+      start: { x: 0, y: 0 },
+      end: { x: 1, y: 1 },
+    };
+    
+    document.querySelector('#set-area-instructions').innerHTML = `
+          start=x:${config.detection_params.area.start.x.toFixed(2)},y:${config.detection_params.area.start.y.toFixed(2)}&nbsp;&nbsp;&nbsp;
+          end=x:${config.detection_params.area.end.x.toFixed(2)},y:${config.detection_params.area.end.y.toFixed(2)}
+          `;
+  })
+
+  // camera stream change events
+  root.querySelector('#camera_param_id').addEventListener('change', (e) => {
+    config.camera_params.camID = e.target.value;
+
+    // re-attach camera stream
+    webcamMan.startCameraFeed(config.camera_params);
+  });
+
+  root.querySelector('#camera_param_videoSize').addEventListener('change', (e) => {
+    config.camera_params.videoSize = e.target.value;
+
+    // re-attach camera stream
+    webcamMan.startCameraFeed(config.camera_params);
+  });
+
+  root.querySelector('#detection_params-minMarkerDistance')
+    .addEventListener('change', (e) => config.detection_params.minMarkerDistance = e.target.value);
+  root.querySelector('#detection_params-minMarkerPerimeter')
+    .addEventListener('change', (e) => config.detection_params.minMarkerPerimeter = e.target.value);
+  root.querySelector('#detection_params-maxMarkerPerimeter')
+    .addEventListener('change', (e) => config.detection_params.maxMarkerPerimeter = e.target.value);
+  root.querySelector('#detection_params-sizeAfterPerspectiveRemoval')
+    .addEventListener('change', (e) => config.detection_params.sizeAfterPerspectiveRemoval = e.target.value);
+  
+  root.querySelector('#detection_params-contrast')
+    .addEventListener('change', (e) => config.feed_params.contrast = e.target.value);
+  root.querySelector('#detection_params-brightness')
+    .addEventListener('change', (e) => config.feed_params.brightness = e.target.value);
+  root.querySelector('#detection_params-grayscale')
+    .addEventListener('change', (e) => config.feed_params.grayscale = e.target.value);
+  root.querySelector('#detection_params-flip')
+    .addEventListener('change', (e) => config.feed_params.flip = e.target.checked);
+  
+  root.querySelector('#detection_params-torch')
+    .addEventListener('change', (e) => {
+      config.camera_params.torch = e.target.checked;
+
+      webcamMan.startCameraFeed(config.camera_params);
+    });
+
+  // set up service managers
+  webcamMan = new WebcamManager(root.querySelector('#beholder-video'));
+  detectionMan = new DetectionManager(root.querySelector('#detection-canvas'), root.querySelector('#beholder-video'));
+  
+  videoCanvas = root.querySelector('#detection-canvas-overlay');
+  videoCtx = videoCanvas.getContext('2d');
+  
+  overlayCanvas = root.querySelector('#detection-canvas');
+  overlayCtx = overlayCanvas.getContext('2d');
+  
+  debugCanvas = root.querySelector('#debug-canvas');
+  debugCtx = debugCanvas.getContext('2d');
+
+  webcamMan.startCameraFeed(config.camera_params);
+  return;
 }
+
+let prevTime = Date.now();
+export const update = () => {
+  const currentTime = Date.now();
+  const dt = currentTime - prevTime;
+  prevTime = currentTime;
+
+  // check to see that we do indeed have video?
+
+  // run detection
+  const detectedMarkers = detectionMan.detect(dt, config.feed_params, config.detection_params)
+  // update and draw markers
+  updateMarkers(detectedMarkers);
+};
+
+const hide = () => {
+  document.querySelector('#detection-panel').classList.add('hidden');
+};
+const show = () => {
+  document.querySelector('#detection-panel').classList.remove('hidden');
+};
 
 export const getAllMarkers = () => {
   return MARKERS;
@@ -270,7 +306,7 @@ export const getMarker = (id) => {
 
 export const getMarkerPair = (idA, idB) => {
   // throw error here
-  new MarkerPair(MARKERS[idA], MARKERS[idB]);
+  return new MarkerPair(MARKERS[idA], MARKERS[idB]);
 }
 
 export default {
@@ -281,5 +317,5 @@ export default {
   getAllMarkers,
   hide,
   show,
-  addVideoStreamListener,
+  getVideo: () => (webcamMan.video),
 }

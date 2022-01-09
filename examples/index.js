@@ -30,8 +30,6 @@ function update() {
   const dt = delta / 1000;
 
   Beholder.update();
-  // console.log(m2.present);
-  // console.log(m2.present)
   requestAnimationFrame(update);
 }
 

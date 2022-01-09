@@ -1,4 +1,4 @@
-import Vec2 from './utils/Vec2';
+import Vec2 from './utils/Vec2.js';
 
 const MARKER_TIMEOUT_DEFAULT = 1000 / 20; 
 const AXIS_VEC = new Vec2(1, 0);

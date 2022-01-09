@@ -4,6 +4,14 @@
   position: absolute;
 }
 
+#beholder-video {
+  display: none;
+}
+
+.hidden {
+  display: none;
+}
+
 #detection-panel {
   width: min(90vw, 800px);
   height: 90vh;
@@ -18,20 +26,62 @@
   
   font-family: monospace;
   font-size: 12px;
+  position: relative;
 }
 
-#detection-panel #detection-canvas {
+#detection-panel #full-video-div {
   position: relative;
   float: left;
-  clear: both;
   width: 100%;
 }
 
-#detection-panel #detection-canvas-overlay {
+#full-video-div canvas {
+  position: relative;
+  width: 100%;
+}
+
+#full-video-div #detection-area {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 1px solid #00FF00;
+}
+
+#detection-panel #detection-video-div {
+  position: relative;
+  float: left;
+  width: 100%;
+}
+
+#detection-video-div #detection-canvas {
+  position: relative;
+  width: 100%;
+}
+
+#area-buttons {
+  position: relative;
+  float: left;
+  width: 100%;
+  height: 5em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#area-buttons button {
+  padding: 0.5em 1em;
+  margin: 1em;
+}
+
+#detection-video-div #debug-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 #detection-panel #parameters-menu {
