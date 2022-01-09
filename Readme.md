@@ -1,5 +1,5 @@
 # Beholder Detection
-This is the marker detection component of Beholder. Current Version 1.2.3
+This is the marker detection component of Beholder. Current Version 1.3.0
 
 ## Installation
 ```
@@ -7,7 +7,7 @@ npm install beholder-detection
 ```
 or you can use UNPKG
 ```
-<script src="https://unpkg.com/beholder-detection@1.2.3/dist/beholder-detection.js"></script>
+<script src="https://unpkg.com/beholder-detection@1.3.0/dist/beholder-detection.js"></script>
 ```
 
 ## Usage
@@ -32,7 +32,7 @@ A '*' indicates an optional parameter.
 | --- | --- |
 | `init('dom-selector', config*, markerList*)` | Initializes Beholder and appeneds needed elements to the DOM (video and webgl canvas). Requires you to pass a root dom element to append objects to. See details on config below. MarkerList is an array of integer marker ids you wish to track (defaults to [0-99]) |
 | `update()` | Runs detection code and updates all marker objects |
-| `addVideoStreamListener(callback)` | Video streams must be requested asnychronously and must be re-established when changing any parameters of the stream. The callback passed here will recieve a videostream which can be used as the source for an HTML media element.|
+| `getVideo(callback)` | Returns the Beholder html video element |
 | `show()` | Reveals detection overlay |
 | `hide()` | Hides detection overlay |
 

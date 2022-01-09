@@ -63,7 +63,6 @@ function update() {
     ctx.stroke();
 });
 
-  // console.log(Beholder.getMarker(4).deltaRotation);
   requestAnimationFrame(update);
 }
 

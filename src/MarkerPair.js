@@ -1,6 +1,6 @@
 import * as mathjs from 'mathjs';
-import Vec2 from './utils/Vec2';
-import { calDistortionMatrices, matrixTransform } from './utils/Distortion';
+import Vec2 from './utils/Vec2.js';
+import { calDistortionMatrices, matrixTransform } from './utils/Distortion.js';
 
 class MarkerPair {
   constructor(markerA, markerB) {

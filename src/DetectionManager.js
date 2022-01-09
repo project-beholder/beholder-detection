@@ -1,73 +1,60 @@
-import * as R from 'ramda';
-import sampleCombine from 'xstream/extra/sampleCombine'
-import xs from "xstream";
 import aruco from './aruco/index.js';
 
-// DETECTION PARAMS SIDE EFFECTS HERE
-// DO NOT NEED CANVAS
-let detectionParams = {
-  CAMERA_INFO: {},
-  VIDEO_SIZE: { width: { exact: 640 }, height: { exact: 480 } },
-  minMarkerDistance: 10,
-  minMarkerPerimeter: 0.02,
-  maxMarkerPerimeter: 0.8,
-  sizeAfterPerspectiveRemoval: 49,
-};
-
-function DetectionManager(sources) {
-  const canvas$ = sources.DOM.select('#detection-canvas').element();
-  const ctx$ = canvas$.map((c) => c.getContext('2d'));
-  const video$ = sources.DOM.select('#beholder-video').element();
-  const dt$ = sources.update;
-
-  const detector = new aruco.Detector();
-  sources.config.subscribe({
-    next: (c) => {
-      detectionParams = {
-        ...detectionParams,
-        ...c.detection_params, // incoming params, should only replace marker size stuff
-      };
-    }
-  });
-
-  const marker$ = xs.combine(canvas$, ctx$, dt$, video$)
-    .compose(sampleCombine(sources.config)) // we don't want to trigger detection when filters change
-    .map(([drawVars, { feed_params }]) => {
-      const [canvas, ctx, dt, v] = drawVars;
-
-      if (v.readyState === 4) {
-        if (v.clientWidth > 20 && canvas.width !== v.clientWidth) {
-          canvas.width = v.clientWidth;
-          canvas.height = v.clientHeight;
-        }
-        // apply filter here
-        ctx.filter = `contrast(${(100 + Math.floor(feed_params.contrast)) / 100})
-         brightness(${(100 + Math.floor(feed_params.brightness)) / 100})
-         grayscale(${Math.floor(feed_params.grayscale) / 100})`;
-
-        if (feed_params.flip) {
-          ctx.save();
-          ctx.translate(canvas.width, 0);
-          ctx.scale(-1, 1);
-          // Render video frame
-          ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-          ctx.restore();
-        } else {
-          // Render video frame
-          ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-        }
-    
-        let imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
-        let m = [detector.detect(imageData, detectionParams), dt, canvas.width, canvas.height];
-        return m;
-      } else {
-        return [[], dt,canvas.width,canvas.height];
-      }
-    });
-
-  return {
-    marker$,
+class DetectionManager {
+  constructor(canvas, video) {
+    this.canvas = canvas;
+    this.ctx = this.canvas.getContext('2d');
+    this.video = video;
+    this.detector = new aruco.Detector();
   }
+
+  detect(dt, feedParams, detectionParams) {
+    if (this.video && this.video.readyState === 4) {
+      const areaWidth = detectionParams.area.end.x - detectionParams.area.start.x;
+      const areaHeight = detectionParams.area.end.y - detectionParams.area.start.y;
+      if (this.video.width > 20 && this.canvas.width !== this.video.width * areaWidth) {
+        // base it off of the actual area
+        this.canvas.width = this.video.width * areaWidth;
+        this.canvas.height = this.video.height * areaHeight;
+      }
+
+      // apply filter here
+      this.ctx.filter = `contrast(${(100 + Math.floor(feedParams.contrast)) / 100})
+      brightness(${(100 + Math.floor(feedParams.brightness)) / 100})
+      grayscale(${Math.floor(feedParams.grayscale) / 100})`;
+
+      if (feedParams.flip) {
+        this.ctx.save();
+        this.ctx.translate(this.canvas.width, 0);
+        this.ctx.scale(-1, 1);
+        // Render video frame
+        // this is where we draw sub image stuff
+        this.ctx.drawImage(this.video,
+                           detectionParams.area.start.x * this.video.width,
+                           detectionParams.area.start.y * this.video.height,
+                           this.canvas.width, this.canvas.height,
+                           0, 0,
+                           this.canvas.width, this.canvas.height);
+        this.ctx.restore();
+      } else {
+        // Render video frame
+        // this is where we draw sub image stuff
+        this.ctx.drawImage(this.video,
+                           detectionParams.area.start.x * this.video.width,
+                           detectionParams.area.start.y * this.video.height,
+                           this.canvas.width, this.canvas.height,
+                           0, 0,
+                           this.canvas.width, this.canvas.height);
+      }
+  
+      // i think this uses dx and dy :()
+      let imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+      let m = [this.detector.detect(imageData, detectionParams), dt, this.canvas.width, this.canvas.height];
+      return m;
+    } else {
+      return [[], dt, this.canvas.width, this.canvas.height];
+    }
+  }   
 }
 
 export default DetectionManager;
