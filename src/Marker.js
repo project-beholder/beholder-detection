@@ -34,6 +34,8 @@ class Marker {
     this.timestamp = 0;
     this.present = true;
     this.deltaPosition.copy(this.position);
+    // console.log(this.position.x);
+    let prevCenter = this.center.clone();
 
     this.center.x = (this.center.x * this.positionSmoothing) + (m.center.x * (1-this.positionSmoothing));
     this.center.y = (this.center.y * this.positionSmoothing) + (m.center.y * (1-this.positionSmoothing));
@@ -41,6 +43,15 @@ class Marker {
     this.rawPosition.copy(m.center);
 
     this.deltaPosition.sub(this.position).scale(-1); // bc we changed center this should be cool now
+
+    // For some reason it broke. This will just fix it real quick
+    if (isNaN(this.center.x) || isNaN(this.center.y)) {
+      this.center.set(prevCenter.x, prevCenter.y);
+      this.position.set(prevCenter.x, prevCenter.y);
+      this.deltaPosition.set(0, 0);
+      this.rawP
+      console.warn('BEHOLDER: Detection Broke Momentarily');
+    }
 
     // WASTED MEMORY
     this.corners = m.corners.map(c => c); // wtf, seems like a lazy way to copy, but whatever
@@ -68,6 +79,7 @@ class Marker {
     this.avgSideLength = (sides[0] + sides[1] + sides[2] + sides[3]) / 4;
     this.deltaAvgSideLength += this.avgSideLength;
 
+    // TODO: what the heck is this?
     if (this.enable3D) {
       this.center.z = this.avgPerim / this.scale;
     }

@@ -1,5 +1,5 @@
 # Beholder Detection
-This is the marker detection component of Beholder. Current Version 1.3.0
+This is the marker detection component of Beholder. Current Version 1.3.1
 
 ## Installation
 ```
@@ -7,7 +7,7 @@ npm install beholder-detection
 ```
 or you can use UNPKG
 ```
-<script src="https://unpkg.com/beholder-detection@1.3.0/dist/beholder-detection.js"></script>
+<script src="https://unpkg.com/beholder-detection@1.3.1/dist/beholder-detection.js"></script>
 ```
 
 ## Usage
