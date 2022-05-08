@@ -270,6 +270,9 @@ const init = (domRoot, userConfig, markerList) => {
   debugCanvas = root.querySelector('#debug-canvas');
   debugCtx = debugCanvas.getContext('2d');
 
+  // fix camera on resize
+  window.addEventListener('resize', () => webcamMan.startCameraFeed(config.camera_params));
+
   webcamMan.startCameraFeed(config.camera_params);
   return;
 }
@@ -283,9 +286,11 @@ export const update = () => {
   // check to see that we do indeed have video?
 
   // run detection
-  const detectedMarkers = detectionMan.detect(dt, config.feed_params, config.detection_params)
-  // update and draw markers
-  updateMarkers(detectedMarkers);
+  if (webcamMan.videoLoaded) {
+    const detectedMarkers = detectionMan.detect(dt, config.feed_params, config.detection_params)
+    // update and draw markers
+    updateMarkers(detectedMarkers);
+  }
 };
 
 const hide = () => {

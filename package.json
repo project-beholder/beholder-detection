@@ -1,6 +1,6 @@
 {
   "name": "beholder-detection",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "",
   "main": "dist/beholder-detection.js",
   "scripts": {

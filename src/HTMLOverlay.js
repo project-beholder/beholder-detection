@@ -12,7 +12,7 @@ export default (config, styles) => `
   <div id="detection-panel" ${config.overlay_params.hide ? 'class="hidden"' : ''}>
     
     <div id="full-video-div">
-      <video id="beholder-video"></video>
+      <video id="beholder-video" playsinline="true"></video>
       <canvas id="detection-canvas-overlay"></canvas>
     </div>
     

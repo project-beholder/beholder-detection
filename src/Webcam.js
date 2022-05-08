@@ -10,6 +10,7 @@ class WebcamManager {
   constructor(video) {
     this.video = video;
     this.vStream = null;
+    this.videoLoaded = false;
     
     // set up camera feeds
     const cameraSelect = document.querySelector('#camera_param_id');
@@ -31,6 +32,7 @@ class WebcamManager {
 
   startCameraFeed({ videoSize: videoSizeIndex, camID, rearCamera, torch }) {
     const videoSize = VIDEO_SIZES[videoSizeIndex];
+    this.videoLoaded = false
     
     if (this.vStream) {
         this.vStream.getTracks().forEach(track => {
@@ -59,8 +61,9 @@ class WebcamManager {
     return navigator.mediaDevices
       .getUserMedia({
         video: {
-          width: videoSize.width,
-          height: videoSize.height,
+          // solve for portrait vs landscape?
+          width: window.innerWidth > window.innerHeight ? videoSize.width : videoSize.height,
+          height: window.innerWidth > window.innerHeight ? videoSize.width : videoSize.height,
           deviceId: (camID !== 0 && !rearCamera) ? { exact: camID } : {},
           facingMode: rearCamera ? { exact: 'environment' } : {},
         }
@@ -77,7 +80,10 @@ class WebcamManager {
         this.video.height = s.getVideoTracks()[0].getSettings().height;
         this.video.play();
         this.vStream = s;
+        this.videoLoaded = true;
         console.log('BEHOLDER: new video stream established')
+
+
 
         if (torch) {
           if (ImageCapture) {
