@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="description" content="">
+    <meta name="author" content="Peter Gyory, Clement Zheng">
+    <meta name="theme-color" content="#B12A34">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"> -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      #example-canvas {
+        height: 10vh;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+      }
+
+      #example-canvas.big-canvas {
+        height: 50vh;
+      }
+
+      #game-canvas {
+        height: 100vh;
+        margin: 0 auto;
+        display: block;
+        /* display: inline-block; */
+      }
+
+      #beholder-root {
+        position: absolute;
+        left: -50vw;
+      }
+    </style>
+
+    <script src="/build/lightcycles_demo.js"></script>
+  </head>
+
+  <body>
+    <div id="beholder-root"></div>
+    <canvas id="example-canvas"></canvas>
+    <canvas id="game-canvas" width="600" height="600"></canvas>
+  </body>
+</html>

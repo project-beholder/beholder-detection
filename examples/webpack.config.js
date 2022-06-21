@@ -6,6 +6,8 @@ module.exports = {
   entry: {
     index: ['./index.js'],
     canvas_test: ['./canvas_test.js'],
+    mobile_debug: ['./mobile_debug.js'],
+    lightcycles_demo: ['./lightcycles_demo.js'],
   },
   mode: 'development',
 

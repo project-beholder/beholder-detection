@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>2 Player Pong</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+      #game-canvas {
+          position: absolute;
+
+          top: 0;
+          left: calc(50vw - 320px);
+          padding: 0;
+          margin: 0;
+        
+          background: #000;
+      }
+      #score {
+        position: absolute;
+        top: 50vh;
+        left: 40px;
+        display: none;
+      }
+      #example-canvas {
+        height: 10vh;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+      }
+
+      #example-canvas.big-canvas {
+        height: 50vh;
+      }
+
+      #beholder-root {
+        position: absolute;
+        left: -50vw;
+      }
+    </style>
+</head>
+
+<body>
+
+    <script src="https://unpkg.com/beholder-detection@1.3.2/dist/beholder-detection.js"></script>
+    <script src="./Utils.js"></script>
+    <script src="./Vec2.js"></script>
+    <script src="./Ball.js"></script>
+    <script src="./Paddle.js"></script>
+    <script src="./Effects.js"></script>
+    <script src="./Controller.js"></script>
+    <script src="./Main.js"></script>
+
+
+      <h1 id="score" class="score-fade">0-0</h1>
+      <canvas id="example-canvas"></canvas>
+      <canvas id="game-canvas" width="640" height="480"></canvas>
+
+      <div id="beholder-root"></div>
+    </body>
+
+</html>
