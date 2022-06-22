@@ -106,61 +106,6 @@ function update() {
   const dt = currentTime - prevTime;
   prevTime = currentTime;
   Beholder.update();
-  overlayCtx.clearRect(0,0, 640, 480);
-
-  const v = Beholder.getVideo();
-
-  // const areaWidth = detectionParams.area.end.x - detectionParams.area.start.x;
-  // const areaHeight = detectionParams.area.end.y - detectionParams.area.start.y;
-  const areaWidth = beholderConfig.detection_params.area.end.x - beholderConfig.detection_params.area.start.x;
-  const areaHeight = beholderConfig.detection_params.area.end.y - beholderConfig.detection_params.area.start.y;
-
-  if (v.width > 20 && overlayCanvas.width !== v.width * areaWidth) {
-    // base it off of the actual area
-    overlayCanvas.width = v.width * areaWidth;
-    overlayCanvas.height = v.height * areaHeight;
-  }
-  
-  overlayCtx.drawImage(v,
-    beholderConfig.detection_params.area.start.x * v.width,
-    beholderConfig.detection_params.area.start.y * v.height,
-    overlayCanvas.width, overlayCanvas.height,
-    0, 0,
-    overlayCanvas.width, overlayCanvas.height);
-  
-  Beholder.getAllMarkers().forEach(m => {
-    if (!m.present) return;
-    if (m.corners.length === 0) return;
-
-    const center = m.center;
-    const corners = m.corners;
-    const angle = m.rotation;
-  
-    overlayCtx.strokeStyle = "#FF00AA";
-    overlayCtx.lineWidth = 5;
-    overlayCtx.beginPath();
-  
-    corners.forEach((c, i) => {
-      overlayCtx.moveTo(c.x, c.y);
-      let c2 = corners[(i + 1) % corners.length];
-      overlayCtx.lineTo(c2.x, c2.y);
-    });
-    overlayCtx.stroke();
-    overlayCtx.closePath();
-  
-    // draw first corner
-    overlayCtx.strokeStyle = "blue";
-    overlayCtx.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
-  
-    overlayCtx.strokeStyle = "#FF00AA";
-    overlayCtx.strokeRect(center.x - 1, center.y - 1, 2, 2);
-
-    overlayCtx.font = "12px monospace";
-    overlayCtx.textAlign = "center";
-    overlayCtx.fillStyle = "#FF55AA";
-    overlayCtx.fillText(`ID=${m.id}`, center.x, center.y - 7);
-    overlayCtx.fillText(angle.toFixed(2), center.x, center.y + 15);
-  });
 
   if (frameTime <= 0) {
     if (leftM.present && !wasLeft) {

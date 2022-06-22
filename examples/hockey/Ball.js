@@ -46,7 +46,7 @@ class Ball {
     // this.angle = angle;
     this.velocity.add(force);
     if (this.velocity.mag() > 5) {
-      this.velocity.normalize().scale(5);
+      this.velocity.normalize().scale(3);
     }
 
     spawnParticles(4, this.pos, 0.8, 200, 0.9);
@@ -96,7 +96,6 @@ class Ball {
 
     ctx.translate(this.pos.x, this.pos.y);
     if (this.spawnTimer <= 10) {
-      // ctx.fillStyle = '#ffffff';
       ctx.fillStyle = BALL_COLORS[this.color];
       ctx.beginPath();
       ctx.arc(0, 0, this.size, 0, 2 * Math.PI);

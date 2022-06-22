@@ -103,6 +103,8 @@ function doGameOver() {
 function init() {
   canvas = document.querySelector('#game-canvas');
   ctx = canvas.getContext('2d');
+  canvas.width = 640;
+  canvas.height = 480;
 
   initController();
   calibrateController();
@@ -113,7 +115,7 @@ function init() {
 
   document.addEventListener('mousedown', (e) => {
     if (gameState == 'START') {
-      document.body.requestFullscreen();
+      // document.body.requestFullscreen();
       gameState = 'MAIN';
     }
 

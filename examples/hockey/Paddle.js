@@ -48,8 +48,9 @@ class Paddle {
   }
 
   launch() {
-    if (this.state != 'REST') return;
-    this.launchTimer = 130;
+    if (this.state !== 'REST') return;
+    console.log(this.state, 'wtf');
+    this.launchTimer = 230;
     this.state = 'LAUNCH';
 
     this.launchForce = this.fwd.clone().rotate(-Math.PI / 2);

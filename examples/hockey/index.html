@@ -3,27 +3,33 @@
 
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no">
     <title>2 Player Pong</title>
     <style>
         * {
             padding: 0;
             margin: 0;
         }
+      body {
+        overflow: hidden;
+      }
 
       #game-canvas {
-          position: absolute;
-
-          top: 0;
-          left: calc(50vw - 320px);
-          padding: 0;
-          margin: 0;
+          /* position: absolute; */
+          display:block;
+          margin: 0 auto;
+          height: 90vh;
+          /* top: 0; */
+          /* left: calc(50vw - 320px); */
+          /* padding: 0;
+          margin: 0; */
         
           background: #000;
       }
       #score {
-        position: absolute;
+        /* position: absolute;
         top: 50vh;
-        left: 40px;
+        left: 40px; */
         display: none;
       }
       #example-canvas {
@@ -46,7 +52,7 @@
 
 <body>
 
-    <script src="https://unpkg.com/beholder-detection@1.3.2/dist/beholder-detection.js"></script>
+    <script src="https://unpkg.com/beholder-detection@1.3.0/dist/beholder-detection.js"></script>
     <script src="./Utils.js"></script>
     <script src="./Vec2.js"></script>
     <script src="./Ball.js"></script>
@@ -58,7 +64,7 @@
 
       <h1 id="score" class="score-fade">0-0</h1>
       <canvas id="example-canvas"></canvas>
-      <canvas id="game-canvas" width="640" height="480"></canvas>
+      <canvas id="game-canvas" ></canvas>
 
       <div id="beholder-root"></div>
     </body>

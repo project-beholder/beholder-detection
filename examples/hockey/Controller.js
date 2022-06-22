@@ -21,11 +21,11 @@ let calibrationSamplesLeft = 20;
 let controllerState = 'CALIBRATING';
 let scoreDiv;
 
-
-let config = {
+let overlayCanvas, overlayCtx;
+let beholderConfig = {
   camera_params: {
     videoSize: 1, // The video size values map to the following [320 x 240, 640 x 480, 1280 x 720, 1920 x 1080]
-    rearCamera: false, // Boolean value for defaulting to the rear facing camera. Only works on mobile
+    rearCamera: true, // Boolean value for defaulting to the rear facing camera. Only works on mobile
     torch: false, // Boolean value for if torch/flashlight is on. Only works for rear facing mobile cameras. Can only be set from init
   },
   detection_params: {
@@ -34,7 +34,7 @@ let config = {
     maxMarkerPerimeter: 1,
     sizeAfterPerspectiveRemoval: 49,
     area: {
-      start: { x: 0.35, y: 0.20 },
+      start: { x: 0.25, y: 0.10 },
       end:   { x: 0.9, y: 0.65 },
     },
   },
@@ -60,17 +60,75 @@ function calibrateController() {
   controllerState = 'CALIBRATING';
 }
 
+function updateOverlay() {
+  overlayCtx.clearRect(0,0, 640, 480);
+
+  const v = Beholder.getVideo();
+
+  // const areaWidth = detectionParams.area.end.x - detectionParams.area.start.x;
+  // const areaHeight = detectionParams.area.end.y - detectionParams.area.start.y;
+  const areaWidth = beholderConfig.detection_params.area.end.x - beholderConfig.detection_params.area.start.x;
+  const areaHeight = beholderConfig.detection_params.area.end.y - beholderConfig.detection_params.area.start.y;
+
+  if (v.width > 20 && overlayCanvas.width !== v.width * areaWidth) {
+    // base it off of the actual area
+    overlayCanvas.width = v.width * areaWidth;
+    overlayCanvas.height = v.height * areaHeight;
+  }
+  
+  overlayCtx.drawImage(v,
+    beholderConfig.detection_params.area.start.x * v.width,
+    beholderConfig.detection_params.area.start.y * v.height,
+    overlayCanvas.width, overlayCanvas.height,
+    0, 0,
+    overlayCanvas.width, overlayCanvas.height);
+  
+  Beholder.getAllMarkers().forEach(m => {
+    if (!m.present) return;
+    if (m.corners.length === 0) return;
+
+    const center = m.center;
+    const corners = m.corners;
+    const angle = m.rotation;
+  
+    overlayCtx.strokeStyle = "#FF00AA";
+    overlayCtx.lineWidth = 5;
+    overlayCtx.beginPath();
+  
+    corners.forEach((c, i) => {
+      overlayCtx.moveTo(c.x, c.y);
+      let c2 = corners[(i + 1) % corners.length];
+      overlayCtx.lineTo(c2.x, c2.y);
+    });
+    overlayCtx.stroke();
+    overlayCtx.closePath();
+  
+    // draw first corner
+    overlayCtx.strokeStyle = "blue";
+    overlayCtx.strokeRect(corners[0].x - 2, corners[0].y - 2, 4, 4);
+  
+    overlayCtx.strokeStyle = "#FF00AA";
+    overlayCtx.strokeRect(center.x - 1, center.y - 1, 2, 2);
+
+    overlayCtx.font = "12px monospace";
+    overlayCtx.textAlign = "center";
+    overlayCtx.fillStyle = "#FF55AA";
+    overlayCtx.fillText(`ID=${m.id}`, center.x, center.y - 7);
+    overlayCtx.fillText(angle.toFixed(2), center.x, center.y + 15);
+  });
+}
+
 // TODO
 // Add overlay
 // Build ctrlr
-// Add 
 
 let updateTimer = 30; // cap updates
 function updateController(deltaTime) {
   // if (updateTimer < 0) {
-    Beholder.update();
+  Beholder.update();
     // updateTimer = 20;
   // }
+  updateOverlay();
   updateTimer -= deltaTime;
 
   // do calibration step
@@ -100,17 +158,20 @@ function updateController(deltaTime) {
     if (p1Marker.present) {
       if (p1Marker.center.x) {
         if (p1Marker.center.x > 0 && p1Offset.x === 0) {
-          p1Offset.copy(p1Marker.center.x);
+          p1Offset.copy(p1Marker.center);
         }
-        if (p1Marker.avgSideLength > 17.8) p1.launch();
+        // console.log(p1Marker.avgSideLength);
+        if (p1Marker.avgSideLength > 38.5) p1.launch();
 
         scoreDiv.innerHTML = p1Marker.center.y;
         const p1MarkerOffset = new Vec2(p1Marker.center.x, p1Marker.center.y)
           .sub(p1Offset)
-          .scale(1/20 * deltaTime / 5);
+          .scale(1/50 * deltaTime / 5);
           // .normalize();
-        scoreDiv.innerHTML = p1MarkerOffset.mag();
-        if (p1MarkerOffset.mag() > 0.2) p1.moveBy(p1MarkerOffset);
+        // scoreDiv.innerHTML = p1MarkerOffset.mag();
+        // console.log(p1MarkerOffset.mag());
+        p1MarkerOffset.x *= -1;
+        if (p1MarkerOffset.mag() > 2) p1.moveBy(p1MarkerOffset);
       } else {
         p1Marker.center.x = 0;
         p1Marker.center.y = 0;
@@ -127,11 +188,10 @@ function updateController(deltaTime) {
 
         scoreDiv.innerHTML = p2Marker.center.y;
         const p2MarkerOffset = new Vec2(p2Marker.center.x, p2Marker.center.y)
-          .sub(p2Offset)
-          .scale(1/20 * deltaTime / 5);
+          .sub(p2Offset);
           // .normalize();
         scoreDiv.innerHTML = p2MarkerOffset.mag();
-        if (p2MarkerOffset.mag() > 0.2) p2.moveBy(p2MarkerOffset);
+        if (p2MarkerOffset.mag() > 20) p2.moveBy(p2MarkerOffset.normalize().scale(deltaTime / 15));
       } else {
         p2Marker.center.x = 0;
         p2Marker.center.y = 0;
@@ -142,13 +202,20 @@ function updateController(deltaTime) {
 }
 
 function initController() {
-  Beholder.init('#beholder-root', config);
+  Beholder.init('#beholder-root', beholderConfig);
   calibrateController();
-  scoreDiv = document.querySelector('#score')
+  scoreDiv = document.querySelector('#score');
+
+  // init overlay
+  overlayCanvas = document.querySelector('#example-canvas');
+  overlayCtx = overlayCanvas.getContext('2d');
+  overlayCanvas.addEventListener('click', () => {
+    overlayCanvas.classList.toggle('big-canvas');
+  });
 
   p1Marker = Beholder.getMarker(0);
   p2Marker = Beholder.getMarker(1);
-  refMarker = Beholder.getMarker(0);
+  refMarker = Beholder.getMarker(2);
 
   p1Marker.rotationSmoothing = 0.5;
   p2Marker.rotationSmoothing = 0.5;
